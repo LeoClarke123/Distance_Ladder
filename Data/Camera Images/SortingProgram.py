@@ -20,8 +20,8 @@ dir_path = os.path.dirname(os.path.realpath(__file__))  #finds the path of this 
 totalfuzzy = open(dir_path+"/"+"total fuzzy data.txt", "w")         #opens and overwrites existing data. Creates this file if not there
 totalpoints = open(dir_path+"/"+"total point-like data.txt", "w")       #opens and overwrites existing data. Creates this file if not there
 
-totalfuzzy.write("Name X Y BlueFlux GreenFlux RedFlux Size RadialVelocity \n")      #
-totalpoints.write("Name X Y BlueFlux GreenFlux RedFlux Parallax RadialVelocity \n")
+totalfuzzy.write("Name Equatorial Polar BlueFlux GreenFlux RedFlux Size RadialVelocity \n")      #
+totalpoints.write("Name Equatorial Polar BlueFlux GreenFlux RedFlux Parallax RadialVelocity \n")
 
 for i in ["Back", "Down", "Front", "Left", "Right", "Up"]:      #each of the six image directions
     for j in ["A", "B", "C", "D", "E", "F"]:                    #each of the image column subdivisions
