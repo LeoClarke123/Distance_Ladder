@@ -26,25 +26,26 @@ totalpoints = open(dir_path+"/"+"total point-like data.txt", "r")       #opens a
 totalfuzzy = open(dir_path+"/"+"total fuzzy data.txt", "r")
 
 
-stardata = totalpoints.readlines()[1:] 
+stardata = totalpoints.readlines()[1:]      #assigns the data
 fuzzydata = totalfuzzy.readlines()[1:]
-allstaraveflux, allfuzaveflux = [], []
+
+allstaraveflux, allfuzaveflux = [], []      #initialize arrays
 stararray, fuzarray = [], []
 starequats, starpolar, starbright, starcolours = [], [], [], []
 fuzequats, fuzpolar, fuzbright, fuzcolours = [], [], [], []
 
 for row in stardata:
     [name, equat, polar, bluef, greenf, redf, parallax, veloc, distance, period, location] = row.split(", ")
-    name, location = name.replace('[', ''), location.replace(']', '')
-    bluef, greenf, redf = float(bluef), float(greenf), float(redf)
+    name, location = name.replace('[', ''), location.replace(']', '')       #cleans up variables
+    bluef, greenf, redf = float(bluef), float(greenf), float(redf)       #cleans up variables
     rgb = [bluef, greenf, redf]
-    aveflux = average(rgb)
-    allstaraveflux.append(aveflux)
-    stararray.append([equat, polar, aveflux])
+    aveflux = average(rgb)          #averages the r g b flux values
+    allstaraveflux.append(aveflux)      #adds it to a list
+    stararray.append([equat, polar, aveflux])       
     starequats.append(float(equat))
     starpolar.append(180 - float(polar))         #flips the polar coords
     norm = max(rgb)         #finds max flux value for normalization purposes.
-    r, g, b = 255 * redf / norm, 255 * greenf / norm, 255 * bluef / norm
+    r, g, b = 255 * redf / norm, 255 * greenf / norm, 255 * bluef / norm            #assigns the rgb values
     starcolours.append(array([r, g, b]))
     
 brightest = max(allstaraveflux)         #finds the brightest star for normalization purposes
@@ -53,16 +54,22 @@ for star in stararray:
     brightness = sqrt(11) * log10((star[2] / brightest) + 1)            #defines scatter marker 'brightness' based on logarithmic algorithm. Spits out value between 0 and 1
     starbright.append(brightness)
 
-starcolours = array(starcolours)/256        #gets the rgb values between 0 and 1
-fig, ax = plt.subplots()
-ax.scatter(starequats, starpolar, s=starbright, c=starcolours, marker='.')
-ax.set_xlabel('Equatorial Angle (deg)')
-ax.set_ylabel('Inverted Polar Angle (deg)')
-ax.set_facecolor('k')
-figure(figsize=(36,18))             #units are inches
-fig.savefig(dir_path + r'\\starmap.png')
+starcolours = array(starcolours)/256        #gets the rgb values between 0 and 1 (because the scatter function chucked a tantrum)
 
-for row in fuzzydata:
+fig, ax = plt.subplots()            #initialize axes
+plt.xlabel('Equatorial Angle (deg)')
+plt.ylabel('Inverted Polar Angle (deg)')
+ax.set_facecolor('k')
+
+plt.scatter(starequats, starpolar, s=starbright, c=starcolours, marker='.')
+
+figure(figsize=(36,18))             #units are inches
+fig.set_dpi(1200)           #sets resolution of image in pixels per square inch?
+fig.savefig('starmap.png')
+
+plt.clf()           #clears the current figure in order to create the next one
+
+for row in fuzzydata:       #functionally identical to the star loop
     [name, equat, polar, bluef, greenf, redf, size, veloc, location] = row.split(", ")
     name, location = name.replace('[', ''), location.replace(']', '')
     bluef, greenf, redf = float(bluef), float(greenf), float(redf)
@@ -83,10 +90,14 @@ for fuzzy in fuzarray:
     fuzbright.append(brightness)
 
 fuzcolours = array(fuzcolours)/256        #gets the rgb values between 0 and 1
+
 fig, ax = plt.subplots()
-ax.scatter(fuzequats, fuzpolar, s=fuzbright, c=fuzcolours, marker='.')
-ax.set_xlabel('Equatorial Angle (deg)')
-ax.set_ylabel('Inverted Polar Angle (deg)')
+plt.xlabel('Equatorial Angle (deg)')
+plt.ylabel('Inverted Polar Angle (deg)')
 ax.set_facecolor('k')
+
+plt.scatter(fuzequats, fuzpolar, s=fuzbright, c=fuzcolours, marker='.')
+
 figure(figsize=(36,18))             #units are inches
-fig.savefig(dir_path + r'\\fuzzymap.png')
+fig.set_dpi(1200)           #sets resolution of image in pixels per square inch?
+fig.savefig('fuzzymap.png')
