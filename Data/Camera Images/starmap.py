@@ -54,17 +54,13 @@ for star in stararray:
     starbright.append(brightness)
 
 starcolours = array(starcolours)/256        #gets the rgb values between 0 and 1
-plt.scatter(starequats, starpolar, s=starbright, c=starcolours, marker='.')
-ax = plt.gca()          #i don't even know what this does
-fig = plt.gcf()
-plt.xlabel('Equatorial Angle (deg)')
-plt.ylabel('Inverted Polar Angle (deg)')
+fig, ax = plt.subplots()
+ax.scatter(starequats, starpolar, s=starbright, c=starcolours, marker='.')
+ax.set_xlabel('Equatorial Angle (deg)')
+ax.set_ylabel('Inverted Polar Angle (deg)')
 ax.set_facecolor('k')
 figure(figsize=(36,18))             #units are inches
-fig.set_dpi(1200)           #sets resolution of image in pixels per square inch?
-fig.savefig('starmap.png')
-
-plt.clf()
+fig.savefig(dir_path + r'\\starmap.png')
 
 for row in fuzzydata:
     [name, equat, polar, bluef, greenf, redf, size, veloc, location] = row.split(", ")
@@ -87,12 +83,10 @@ for fuzzy in fuzarray:
     fuzbright.append(brightness)
 
 fuzcolours = array(fuzcolours)/256        #gets the rgb values between 0 and 1
-plt.scatter(fuzequats, fuzpolar, s=fuzbright, c=fuzcolours, marker='.')
-ax = plt.gca()          #i don't even know what this does
-fig = plt.gcf()
-plt.xlabel('Equatorial Angle (deg)')
-plt.ylabel('Inverted Polar Angle (deg)')
+fig, ax = plt.subplots()
+ax.scatter(fuzequats, fuzpolar, s=fuzbright, c=fuzcolours, marker='.')
+ax.set_xlabel('Equatorial Angle (deg)')
+ax.set_ylabel('Inverted Polar Angle (deg)')
 ax.set_facecolor('k')
 figure(figsize=(36,18))             #units are inches
-fig.set_dpi(1200)           #sets resolution of image in pixels per square inch?
-fig.savefig('fuzzymap.png')
+fig.savefig(dir_path + r'\\fuzzymap.png')
