@@ -2,7 +2,7 @@
 """
 Created on Fri Feb 25 17:01:52 2022
 
-@author: Ryan White
+@author: Ryan White     s4499039
 
 Takes a batch of stellar/galactic data and compiles it into neater files, with some analysis included. 
 The data format must be in folders in the form:
@@ -45,8 +45,8 @@ dir_path = os.path.dirname(os.path.realpath(__file__))  #finds the path of this 
 totalfuzzy = open(dir_path+"/"+"total fuzzy data.txt", "w")         #opens and overwrites existing data. Creates this file if not there
 totalpoints = open(dir_path+"/"+"total point-like data.txt", "w")       #opens and overwrites existing data. Creates this file if not there
 
-totalfuzzy.write("Name Equatorial Polar BlueFlux GreenFlux RedFlux Size RadialVelocity \n")      #
-totalpoints.write("Name Equatorial Polar BlueFlux GreenFlux RedFlux Parallax RadialVelocity Periodicity \n")
+totalfuzzy.write("Name Equatorial Polar BlueFlux GreenFlux RedFlux Size RadialVelocity Location \n")
+totalpoints.write("Name Equatorial Polar BlueFlux GreenFlux RedFlux Parallax RadialVelocity Distance Periodicity Location \n")
 
 
 for i in ["Back", "Down", "Front", "Left", "Right", "Up"]:      #each of the six image directions
@@ -94,15 +94,16 @@ for i in ["Back", "Down", "Front", "Left", "Right", "Up"]:      #each of the six
                         polar = abs(ypos - 90)
                         equat = 270 + xpos
                     #below code arranges data into a list string, and then adds it to the end of the document. 
-                    addendum = str([name, round(equat, 3), round(polar, 3), bluef, greenf, redf, size, veloc]) + "\n"
+                    addendum = str([name, round(equat, 3), round(polar, 3), bluef, greenf, redf, size, veloc, i+j+k]) + "\n"
                     totalfuzzy.write(addendum)
+            fuzzy.close()
             #now to analyse/combine the point data
             with points as p:       #this section's coordinate transform is identical to the fuzzy section, but replaces size variable with parallax angle variable
-                pointcontents = p.readlines()[1:]                    #reads the file and puts all content (except line 1) into the list 'contents'
+                pointcontents = p.readlines()[1:]                    #reads the file and puts all content (except line 1) into the list 'pointcontents'
                 for row in pointcontents:
                     [name, xpos, ypos, bluef, greenf, redf, parallax, veloc] = row.split()      #splits the row into strings of each data type instead of one long string
                     xpos, ypos, bluef, greenf, redf, parallax, veloc = float(xpos), float(ypos), float(bluef), float(greenf), float(redf), float(parallax), float(veloc)
-                    period = 0
+                    period = 0          #sets variability period to 0 for stars with no variable nature. Variable stars period is changed in next loop if applicable
                     # following for loop courtesy of Dr Benjamin Pope as per the "Extracting Period Information" section of the PHYS3080 Distance Ladder project info handout
                     for star in variablestars:
                         if name == star:
@@ -114,8 +115,8 @@ for i in ["Back", "Down", "Front", "Left", "Right", "Up"]:      #each of the six
                             period = 1 / freqs[argmax(power)]       #finds most likely period from the frequency associated with maximum power
                     
                     #following if statement calculates point distance if parallax angle is not 0. 
-                    if parallax != 0:
-                        distance = 1 / parallax
+                    if parallax > 0.001:
+                        distance = abs(1 / parallax)
                     else:
                         distance = "undef"
                     
@@ -147,5 +148,8 @@ for i in ["Back", "Down", "Front", "Left", "Right", "Up"]:      #each of the six
                     else:
                         polar = abs(ypos - 90)
                         equat = 270 + xpos
-                    addendum = str([name, round(equat, 3), round(polar, 3), bluef, greenf, redf, parallax, veloc, distance, period]) + "\n"
+                    addendum = str([name, round(equat, 3), round(polar, 3), bluef, greenf, redf, parallax, veloc, distance, period, i+j+k]) + "\n"
                     totalpoints.write(addendum)
+            points.close()
+totalfuzzy.close()
+totalpoints.close()
