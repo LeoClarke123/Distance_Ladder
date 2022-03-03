@@ -67,6 +67,7 @@ figure(figsize=(36,18))             #units are inches
 fig.set_dpi(1200)           #sets resolution of image in pixels per square inch?
 fig.savefig('starmap.png')
 
+totalpoints.close()
 plt.clf()           #clears the current figure in order to create the next one
 
 for row in fuzzydata:       #functionally identical to the star loop
@@ -101,3 +102,5 @@ plt.scatter(fuzequats, fuzpolar, s=fuzbright, c=fuzcolours, marker='.')
 figure(figsize=(36,18))             #units are inches
 fig.set_dpi(1200)           #sets resolution of image in pixels per square inch?
 fig.savefig('fuzzymap.png')
+
+totalfuzzy.close()
