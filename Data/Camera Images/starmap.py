@@ -4,7 +4,7 @@ Created on Tue Mar  1 14:43:01 2022
 
 @author: Ryan White     s4499039
 
-Plots a basic star map of the sky as seen from the observer. 
+Plots a basic star map of the sky as seen from the observer. Also produces a basic fuzzy-object map in the same format.
 There's quite a bit i'm not happy with in here, but sunk cost fallacy made me get it to a useable state. 
 
 Needs fixing:
@@ -42,7 +42,7 @@ for row in stardata:
     allstaraveflux.append(aveflux)      #adds it to a list
     stararray.append([equat, polar, aveflux])       
     starequats.append(float(equat))
-    starpolar.append(180 - float(polar))         #flips the polar coords
+    starpolar.append(float(polar))         #flips the polar coords
     norm = max(rgb)         #finds max flux value for normalization purposes.
     r, g, b = 255 * redf / norm, 255 * greenf / norm, 255 * bluef / norm            #assigns the rgb values
     starcolours.append(array([r, g, b]))
@@ -57,8 +57,9 @@ starcolours = array(starcolours)/256        #gets the rgb values between 0 and 1
 
 fig, ax = plt.subplots()            #initialize axes
 plt.xlabel('Equatorial Angle (deg)')
-plt.ylabel('Inverted Polar Angle (deg)')
+plt.ylabel('Polar Angle (deg)')
 ax.set_facecolor('k')
+plt.gca().invert_yaxis()        #flips the y-axis so that polar angle is 0 at due north
 
 plt.scatter(starequats, starpolar, s=starbright, c=starcolours, marker='.')
 
@@ -77,7 +78,7 @@ for row in fuzzydata:       #functionally identical to the star loop
     allfuzaveflux.append(aveflux)
     fuzarray.append([equat, polar, aveflux])
     fuzequats.append(float(equat))
-    fuzpolar.append(180 - float(polar))         #flips the polar coords
+    fuzpolar.append(float(polar))         #flips the polar coords
     norm = max(rgb)         #finds max flux value for normalization purposes.
     r, g, b = 255 * redf / norm, 255 * greenf / norm, 255 * bluef / norm
     fuzcolours.append(array([r, g, b]))
@@ -92,8 +93,9 @@ fuzcolours = array(fuzcolours)/256        #gets the rgb values between 0 and 1
 
 fig, ax = plt.subplots()
 plt.xlabel('Equatorial Angle (deg)')
-plt.ylabel('Inverted Polar Angle (deg)')
+plt.ylabel('Polar Angle (deg)')
 ax.set_facecolor('k')
+plt.gca().invert_yaxis()
 
 plt.scatter(fuzequats, fuzpolar, s=fuzbright, c=fuzcolours, marker='.')
 

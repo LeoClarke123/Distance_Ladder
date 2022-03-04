@@ -15,14 +15,15 @@ The data format must be in folders in the form:
         .   .   .   "starname".csv  (optional)
         Up  F   06  ... 
 
-Outputs two files:
+Outputs three files:
     total fuzzy data.txt
     total point-like data.txt
-which are exactly as described. 
+    calibrated star data.txt
+which are exactly as described, where "calibrated star data.txt" is a list of stars to which the distance is known (important for further analysis). 
 
-This program also checks whether stars have associated variable data, and then calculates the periodicity if found data. 
+This program also checks whether stars have associated variable data, and then calculates the periodicity if data is found. 
 
-The output data format is in the form of (for fuzzy stars and point-like objects respectively):
+The output data format is in the form of (for fuzzy stars and point-like/calibrated objects respectively):
     Name    Equatorial Angle (deg)  Polar Angle (deg)   Blue Flux (W/m^2/nm)    Green Flux ("")     Red Flux ("")   Size (arcsec)   Radial Velocity (km/s)  Location (picture)
     Name    Equatorial Angle (deg)  Polar Angle (deg)   Blue Flux (W/m^2/nm)    Green Flux ("")     Red Flux ("")   Parallax (arcsec)   Radial Velocity (km/s)  Distance (pc)   Periodicity (hrs)  Location (picture)
 
@@ -43,8 +44,9 @@ import os
 
 dir_path = os.path.dirname(os.path.realpath(__file__))  #finds the path of this program to use later
 
-#following initializes all lists needed for program
+#following initializes all lists needed for program; P for point-like objects, C for calibrated stars, and F for fuzzy objects
 PNAMES, PEQUATS, PPOLARS, PBLUE, PGREEN, PRED, PPARA, PRVEL, PDIST, PPERIOD, PLOCATION = [], [], [], [], [], [], [], [], [], [], []
+CNAMES, CEQUATS, CPOLARS, CBLUE, CGREEN, CRED, CPARA, CRVEL, CDIST, CPERIOD, CLOCATION = [], [], [], [], [], [], [], [], [], [], []
 FNAMES, FEQUATS, FPOLARS, FBLUE, FGREEN, FRED, FSIZE, FRVEL, FLOCATION = [], [], [], [], [], [], [], [], []
 
 for i in ["Back", "Down", "Front", "Left", "Right", "Up"]:      #each of the six image directions
@@ -112,12 +114,6 @@ for i in ["Back", "Down", "Front", "Left", "Right", "Up"]:      #each of the six
                             power = LS.power(freqs)     #calculates LS power
                             period = 1 / freqs[argmax(power)]       #finds most likely period from the frequency associated with maximum power
                     
-                    #following if statement calculates point distance if parallax angle is not 0. 
-                    if parallax > 0.001:
-                        distance = round(abs(1 / parallax))
-                    else:
-                        distance = "undef"
-                    
                     #following computes the coordinate transform as before
                     if i == "Up":
                         polar = abs(ypos)
@@ -146,20 +142,30 @@ for i in ["Back", "Down", "Front", "Left", "Right", "Up"]:      #each of the six
                     else:
                         polar = abs(ypos - 90)
                         equat = 270 + xpos
+                        
+                    #following if statement calculates point distance if parallax angle is greater than some threshold. This also appends the calibrated lists with the star data
+                    if parallax > 0.002:
+                        distance = round(abs(1 / parallax))
+                        CNAMES.append(name), CEQUATS.append(str(round(equat, 3))), CPOLARS.append(str(round(polar, 3))), CBLUE.append(bluef), CRED.append(redf), CGREEN.append(greenf)
+                        CPARA.append(str(parallax)), CRVEL.append(veloc), CDIST.append(distance), CPERIOD.append(str(period)), CLOCATION.append(i+j+k)
+                    else:
+                        distance = "undef"
                     PNAMES.append(name), PEQUATS.append(str(round(equat, 3))), PPOLARS.append(str(round(polar, 3))), PBLUE.append(bluef), PRED.append(redf), PGREEN.append(greenf)
                     PPARA.append(str(parallax)), PRVEL.append(veloc), PDIST.append(distance), PPERIOD.append(str(period)), PLOCATION.append(i+j+k)
             points.close()
-print("extra now")
 
 #below code arranges each variable into respective columns for a total data set
 totalfuzzy = [FNAMES, FEQUATS, FPOLARS, FBLUE, FGREEN, FRED, FSIZE, FRVEL, FLOCATION]
 totalpoints = [PNAMES, PEQUATS, PPOLARS, PBLUE, PGREEN, PRED, PPARA, PRVEL, PDIST, PPERIOD, PLOCATION]
+totalcalibrated = [CNAMES, CEQUATS, CPOLARS, CBLUE, CGREEN, CRED, CPARA, CRVEL, CDIST, CPERIOD, CLOCATION]
 
 #below code creates names for each column, and writes it to the file
 fuzzy = Table(totalfuzzy, names=['Name', 'Equatorial', 'Polar', 'BlueFlux', 'GreenFlux', 'RedFlux', 'Size', 'RadialVelocity', 'Location'])
 fuzzy.write('total fuzzy data.txt', overwrite=True, format='ascii')
+
 points = Table(totalpoints, names=['Name', 'Equatorial', 'Polar', 'BlueFlux', 'GreenFlux', 'RedFlux', 'Parallax', 'RadialVelocity', 'Distance', 'Periodicity', 'Location'])  #
 points.write('total point-like data.txt', overwrite=True, format='ascii')
 
-
+calibrated = Table(totalcalibrated, names=['Name', 'Equatorial', 'Polar', 'BlueFlux', 'GreenFlux', 'RedFlux', 'Parallax', 'RadialVelocity', 'Distance', 'Periodicity', 'Location'])
+calibrated.write('calibrated star data.txt', overwrite=True, format='ascii')
 
