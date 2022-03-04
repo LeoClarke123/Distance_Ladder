@@ -22,8 +22,8 @@ from matplotlib.pyplot import figure
 
 
 dir_path = os.path.dirname(os.path.realpath(__file__))  #finds the path of this program to use later
-totalpoints = open(dir_path+"/"+"total point-like data.txt", "r")       #opens and reads existing data. 
-totalfuzzy = open(dir_path+"/"+"total fuzzy data.txt", "r")
+totalpoints = open(dir_path+"/total point-like data.txt", "r")       #opens and reads existing data. 
+totalfuzzy = open(dir_path+"/total fuzzy data.txt", "r")
 
 
 stardata = totalpoints.readlines()[1:]      #assigns the data
@@ -35,8 +35,7 @@ starequats, starpolar, starbright, starcolours = [], [], [], []
 fuzequats, fuzpolar, fuzbright, fuzcolours = [], [], [], []
 
 for row in stardata:
-    [name, equat, polar, bluef, greenf, redf, parallax, veloc, distance, period, location] = row.split(", ")
-    name, location = name.replace('[', ''), location.replace(']', '')       #cleans up variables
+    [name, equat, polar, bluef, greenf, redf, parallax, veloc, distance, period, location] = row.split()
     bluef, greenf, redf = float(bluef), float(greenf), float(redf)       #cleans up variables
     rgb = [bluef, greenf, redf]
     aveflux = average(rgb)          #averages the r g b flux values
@@ -71,8 +70,7 @@ totalpoints.close()
 plt.clf()           #clears the current figure in order to create the next one
 
 for row in fuzzydata:       #functionally identical to the star loop
-    [name, equat, polar, bluef, greenf, redf, size, veloc, location] = row.split(", ")
-    name, location = name.replace('[', ''), location.replace(']', '')
+    [name, equat, polar, bluef, greenf, redf, size, veloc, location] = row.split()
     bluef, greenf, redf = float(bluef), float(greenf), float(redf)
     rgb = [bluef, greenf, redf]
     aveflux = average(rgb)

@@ -23,8 +23,8 @@ which are exactly as described.
 This program also checks whether stars have associated variable data, and then calculates the periodicity if found data. 
 
 The output data format is in the form of (for fuzzy stars and point-like objects respectively):
-    Name    Equatorial Angle (deg)  Polar Angle (deg)   Blue Flux (W/m^2/nm)    Green Flux ("")     Red Flux ("")   Size (arcsec)   Radial Velocity (km/s)
-    Name    Equatorial Angle (deg)  Polar Angle (deg)   Blue Flux (W/m^2/nm)    Green Flux ("")     Red Flux ("")   Parallax (arcsec)   Radial Velocity (km/s)  Distance (pc)   Periodicity (hrs)
+    Name    Equatorial Angle (deg)  Polar Angle (deg)   Blue Flux (W/m^2/nm)    Green Flux ("")     Red Flux ("")   Size (arcsec)   Radial Velocity (km/s)  Location (picture)
+    Name    Equatorial Angle (deg)  Polar Angle (deg)   Blue Flux (W/m^2/nm)    Green Flux ("")     Red Flux ("")   Parallax (arcsec)   Radial Velocity (km/s)  Distance (pc)   Periodicity (hrs)  Location (picture)
 
 Note that in the decided spherical coordinate system, polar angle is 0 at 'due north' [(0,0) in Up image].
     Positive polar direction is down 
@@ -42,12 +42,10 @@ import os
 
 
 dir_path = os.path.dirname(os.path.realpath(__file__))  #finds the path of this program to use later
-totalfuzzy = open(dir_path+"/"+"total fuzzy data.txt", "w")         #opens and overwrites existing data. Creates this file if not there
-totalpoints = open(dir_path+"/"+"total point-like data.txt", "w")       #opens and overwrites existing data. Creates this file if not there
 
-totalfuzzy.write("Name Equatorial Polar BlueFlux GreenFlux RedFlux Size RadialVelocity Location \n")
-totalpoints.write("Name Equatorial Polar BlueFlux GreenFlux RedFlux Parallax RadialVelocity Distance Periodicity Location \n")
-
+#following initializes all lists needed for program
+PNAMES, PEQUATS, PPOLARS, PBLUE, PGREEN, PRED, PPARA, PRVEL, PDIST, PPERIOD, PLOCATION = [], [], [], [], [], [], [], [], [], [], []
+FNAMES, FEQUATS, FPOLARS, FBLUE, FGREEN, FRED, FSIZE, FRVEL, FLOCATION = [], [], [], [], [], [], [], [], []
 
 for i in ["Back", "Down", "Front", "Left", "Right", "Up"]:      #each of the six image directions
     for j in ["A", "B", "C", "D", "E", "F"]:                    #each of the image column subdivisions
@@ -93,16 +91,16 @@ for i in ["Back", "Down", "Front", "Left", "Right", "Up"]:      #each of the six
                     else:
                         polar = abs(ypos - 90)
                         equat = 270 + xpos
-                    #below code arranges data into a list string, and then adds it to the end of the document. 
-                    addendum = str([name, round(equat, 3), round(polar, 3), bluef, greenf, redf, size, veloc, i+j+k]) + "\n"
-                    totalfuzzy.write(addendum)
+                    #below code appends each variable to the associated string
+                    FNAMES.append(name), FEQUATS.append(str(round(equat, 3))), FPOLARS.append(str(round(polar, 3))), FBLUE.append(bluef), FRED.append(redf), FGREEN.append(greenf)
+                    FSIZE.append(str(size)), FRVEL.append(veloc), FLOCATION.append(i+j+k)
             fuzzy.close()
             #now to analyse/combine the point data
             with points as p:       #this section's coordinate transform is identical to the fuzzy section, but replaces size variable with parallax angle variable
                 pointcontents = p.readlines()[1:]                    #reads the file and puts all content (except line 1) into the list 'pointcontents'
                 for row in pointcontents:
                     [name, xpos, ypos, bluef, greenf, redf, parallax, veloc] = row.split()      #splits the row into strings of each data type instead of one long string
-                    xpos, ypos, bluef, greenf, redf, parallax, veloc = float(xpos), float(ypos), float(bluef), float(greenf), float(redf), float(parallax), float(veloc)
+                    xpos, ypos, parallax = float(xpos), float(ypos), float(parallax)
                     period = 0          #sets variability period to 0 for stars with no variable nature. Variable stars period is changed in next loop if applicable
                     # following for loop courtesy of Dr Benjamin Pope as per the "Extracting Period Information" section of the PHYS3080 Distance Ladder project info handout
                     for star in variablestars:
@@ -116,7 +114,7 @@ for i in ["Back", "Down", "Front", "Left", "Right", "Up"]:      #each of the six
                     
                     #following if statement calculates point distance if parallax angle is not 0. 
                     if parallax > 0.001:
-                        distance = abs(1 / parallax)
+                        distance = round(abs(1 / parallax))
                     else:
                         distance = "undef"
                     
@@ -148,8 +146,20 @@ for i in ["Back", "Down", "Front", "Left", "Right", "Up"]:      #each of the six
                     else:
                         polar = abs(ypos - 90)
                         equat = 270 + xpos
-                    addendum = str([name, round(equat, 3), round(polar, 3), bluef, greenf, redf, parallax, veloc, distance, period, i+j+k]) + "\n"
-                    totalpoints.write(addendum)
+                    PNAMES.append(name), PEQUATS.append(str(round(equat, 3))), PPOLARS.append(str(round(polar, 3))), PBLUE.append(bluef), PRED.append(redf), PGREEN.append(greenf)
+                    PPARA.append(str(parallax)), PRVEL.append(veloc), PDIST.append(distance), PPERIOD.append(str(period)), PLOCATION.append(i+j+k)
             points.close()
-totalfuzzy.close()
-totalpoints.close()
+print("extra now")
+
+#below code arranges each variable into respective columns for a total data set
+totalfuzzy = [FNAMES, FEQUATS, FPOLARS, FBLUE, FGREEN, FRED, FSIZE, FRVEL, FLOCATION]
+totalpoints = [PNAMES, PEQUATS, PPOLARS, PBLUE, PGREEN, PRED, PPARA, PRVEL, PDIST, PPERIOD, PLOCATION]
+
+#below code creates names for each column, and writes it to the file
+fuzzy = Table(totalfuzzy, names=['Name', 'Equatorial', 'Polar', 'BlueFlux', 'GreenFlux', 'RedFlux', 'Size', 'RadialVelocity', 'Location'])
+fuzzy.write('total fuzzy data.txt', overwrite=True, format='ascii')
+points = Table(totalpoints, names=['Name', 'Equatorial', 'Polar', 'BlueFlux', 'GreenFlux', 'RedFlux', 'Parallax', 'RadialVelocity', 'Distance', 'Periodicity', 'Location'])  #
+points.write('total point-like data.txt', overwrite=True, format='ascii')
+
+
+
