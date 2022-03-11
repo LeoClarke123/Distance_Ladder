@@ -9,9 +9,9 @@ This program searches through the *total* fuzzy data to identify clusters of fuz
 To do this, it checks whether fuzzy objects are similar in position in the sky (equatorial and polar angle similarity), as well as if their radial velocities
 are similar. The 'closeness' that fuzzy objects have to have is related to their radial velocity, by the function
 
-closeness = 3 * exp(-1/800 * abs(velocity))
+closeness = 6 * exp(-1/500 * abs(velocity)) + 2
 
-which gives a needed closeness of <=3 degrees for extremely close clusters, and around 0.6 degrees for clusters with 1000km/s radial velocity. 
+which gives a needed closeness of <=8 degrees for extremely close clusters, and around 3 degrees for clusters with 1000km/s radial velocity. 
 
 
 Cluster/Group Naming Convention:
@@ -22,7 +22,9 @@ Cluster/Group Naming Convention:
      - The second string of characters refers to the objects polar angle. (rounded to nearest degree of the central member)
      - e.g. RG094-003 would be a receding group, at equatorial angle 94 degrees and polar angle 3 degrees
 
-The output is a file "cluster data.txt" which has the name, number of members, and approximate radial velocity of each group/cluster.
+The output is a file "cluster data.txt" which has the name, number of members, approximate radial velocity of each group/cluster, and the population names of the cluster in the format:
+    
+    Name    No. of Members  Radial Velocity     Names of Cluster Members
 """
 
 from numpy import *
@@ -51,6 +53,7 @@ while i <= len(fuzzydata)-1:
     bluef, greenf, redf, veloc= float(bluef), float(greenf), float(redf), float(veloc)
     equat, polar = float(equat), float(polar)
     
+    members = []
     workingcluster = []         #initializes the 'current' cluster to focus on, to which individual fuzzy objects are added
     j = 0       #secondary while loop iterating variable
     
@@ -58,6 +61,7 @@ while i <= len(fuzzydata)-1:
         if j == 0:      #if this is the first fuzzy to look at
             addendum =  str([name, equat, polar, size, veloc, location]) + "\n"
             workingcluster.append(addendum)
+            members.append(name)
             checklist.append(1)
             j += 1
         elif i + j >= len(fuzzydata):       #if the current working cluster index is >= the total data length
@@ -79,7 +83,7 @@ while i <= len(fuzzydata)-1:
                 clustername += str('%03d' % round(equatM)) + "-" + str('%03d' % round(polarM))      #adds 3 digit, rounded equat and polar angles to clustername
                 
                 i += j
-                clusters.append([clustername, len(workingcluster), veloc])      #adds the working cluster to the list of clusters
+                clusters.append([clustername, len(workingcluster), veloc, members])      #adds the working cluster to the list of clusters
                 j = -1
             #if the working cluster doesn't qualify as a group or cluster, the else statement then just ignores the working cluster
             else:
@@ -94,8 +98,9 @@ while i <= len(fuzzydata)-1:
             equat2, polar2 = float(equat2), float(polar2)
             
             #following if statement checks if the (i+j)th fuzzy object is close to the ith fuzzy in the sky, AND has a very similar radial velocity
-            if (isclose(equat, equat2, abs_tol=(3*exp(-1/900 * abs(veloc)))) and isclose(polar, polar2, abs_tol=(3*exp(-1/900 * abs(veloc))))) and isclose(veloc, veloc2, rel_tol=0.01):
+            if (isclose(equat, equat2, abs_tol=(6*exp(-1/500 * abs(veloc)) + 2)) and isclose(polar, polar2, abs_tol=(6*exp(-1/500 * abs(veloc)) + 2))) and isclose(veloc, veloc2, rel_tol=0.01):
                 addendum = str([name2, equat2, polar2, size2, veloc2, location2]) + "\n"
+                members.append(name2)
                 workingcluster.append(addendum)     #if the two objects are close, it adds the (i+j)th object to the working cluster
                 checklist.append(1)         #checks the object off so that it isn't read again
                 j += 1
@@ -115,7 +120,7 @@ while i <= len(fuzzydata)-1:
                     equatM, polarM = float(equatM), float(polarM)
                     clustername += str('%03d' % round(equatM)) + "-" + str('%03d' % round(polarM))
                     i += j
-                    clusters.append([clustername, len(workingcluster), veloc])
+                    clusters.append([clustername, len(workingcluster), veloc, members])
                     j = -1
                 else:
                     i += j      
@@ -133,18 +138,18 @@ while k <= 3:       #while loop here so that multiple passes of the following er
     if k == 3:
         print("Third pass:")
     for idx, row in enumerate(clusters):            #"for cluster 1"
-        [name, n, veloc] = row          #reads data of cluster and then cleans it up a bit
+        [name, n, veloc, members] = row          #reads data of cluster and then cleans it up a bit
         prefix, polar = name.split("-")
         equat = prefix[-3:]
         numequat, numpolar = float(equat), float(polar)
         for index, line in enumerate(clusters):         #"for cluster 2"
             if idx != index:        #we only care about different clusters
-                [name2, n2, veloc2] = line
+                [name2, n2, veloc2, members2] = line
                 prefix2, polar2 = name2.split("-")
                 equat2 = prefix2[-3:]
                 numequat2, numpolar2 = float(equat2), float(polar2)
                 #checks if cluster 2 is eerily close to cluster 1 in terms of characteristics. If so, they get merged and their name changed if they now qualify as a cluster
-                if (numequat2 - 1 <= numequat <= numequat2 + 1) and (numpolar2 - 1 <= numpolar <= numpolar2 + 1) and (veloc2 - 0.5 <= veloc <= veloc2 + 0.5):
+                if (numequat2 - 2 <= numequat <= numequat2 + 2) and (numpolar2 - 2 <= numpolar <= numpolar2 + 2) and (veloc2 - 1 <= veloc <= veloc2 + 1):
                     print("MERGING:" + str(clusters[idx]))
                     if sign(veloc) < 0:
                         clustername = "R"
@@ -155,14 +160,14 @@ while k <= 3:       #while loop here so that multiple passes of the following er
                     else:
                         clustername += "G"
                     name = clustername + equat + "-" + polar
-                    clusters[idx] = [name, n+n2, veloc] 
+                    clusters[idx] = [name, n+n2, veloc, members+members2] 
                     print("DELETING:" + str(clusters[index]))
                     del clusters[index]     #deletes cluster 2 from the cluster list so that it isn't checked again
     k += 1
 
 #following codes creates a new file "cluster data.txt" (if it isn't there already) and adds each cluster to it separated by a new line
 totalclusters = open(dir_path+"/fuzzy cluster data.txt", "w")
-totalclusters.write("Name   No. of Members  Radial Velocity \n")
+totalclusters.write("Name   No. of Members  Radial Velocity  Names of Members\n")
 for cluster in clusters:
     totalclusters.write(str(cluster) + "\n")
     

@@ -19,7 +19,7 @@ Outputs three files:
     total fuzzy data.txt
     total point-like data.txt
     calibrated star data.txt
-which are exactly as described, where "calibrated star data.txt" is a list of stars to which the distance is known (important for further analysis). 
+which are exactly as described, where "calibrated star data.txt" is a list of stars for which the distance was inferred by parallax (important for further analysis). 
 
 This program also checks whether stars have associated variable data, and then calculates the periodicity if data is found. 
 
@@ -144,7 +144,7 @@ for i in ["Back", "Down", "Front", "Left", "Right", "Up"]:      #each of the six
                         equat = 270 + xpos
                         
                     #following if statement calculates point distance if parallax angle is greater than some threshold. This also appends the calibrated lists with the star data
-                    if parallax > 0.002:
+                    if parallax > 0.005:
                         distance = round(abs(1 / parallax))
                         CNAMES.append(name), CEQUATS.append(str(round(equat, 3))), CPOLARS.append(str(round(polar, 3))), CBLUE.append(bluef), CRED.append(redf), CGREEN.append(greenf)
                         CPARA.append(str(parallax)), CRVEL.append(veloc), CDIST.append(distance), CPERIOD.append(str(period)), CLOCATION.append(i+j+k)
