@@ -61,7 +61,7 @@ for row in stardata:
 if maxvel < -minvel:
     maxvel = -minvel
 else:
-    minvel = -maxvell
+    minvel = -maxvel
     
 brightest = max(allstaraveflux)         #finds the brightest star for normalization purposes
 
@@ -73,34 +73,33 @@ starcolours = array(starcolours)/256        #gets the rgb values between 0 and 1
 
 #below plots the colour star map
 fig, ax = plt.subplots()            #initialize axes
-plt.xlabel('Equatorial Angle (deg)')
-plt.ylabel('Polar Angle (deg)')
+ax.set_xlabel('Equatorial Angle (deg)')
+ax.set_ylabel('Polar Angle (deg)')
 ax.set_facecolor('k')
-plt.gca().invert_yaxis()        #flips the y-axis so that polar angle is 0 at due north
+ax.invert_yaxis()        #flips the y-axis so that polar angle is 0 at due north
 
 plt.scatter(starequats, starpolar, s=starbright, c=starcolours, marker='.')
 
 figure(figsize=(36,18))             #units are inches
 fig.set_dpi(1200)           #sets resolution of image in pixels per square inch?
-fig.savefig('starmap.png')
+fig.savefig(dir_path+'\\starmap.png')
 
 plt.clf()
 
-#the below plots the redshift map of the stars
-fig, ax = plt.subplots()
-plt.xlabel('Equatorial Angle (deg)')
-plt.ylabel('Polar Angle (deg)')
-ax.set_facecolor('k')
-plt.gca().invert_yaxis() 
+# make 2 versions, one for analysis (blank name) and one for inclusion in report ('pretty' name)
+for (scale,lwidth,name,DPI) in [(0.1,0,'',1200),(5,0,'-pretty',400)]:
+    #the below plots the redshift map of the stars
+    fig, ax = plt.subplots(figsize=(12,6))  #units are inches
+    ax.set_xlabel('Equatorial Angle (deg)')
+    ax.set_ylabel('Polar Angle (deg)')
+    ax.set_facecolor('k')
+    ax.invert_yaxis() 
 
-red = plt.scatter(starequats, starpolar, s=0.1, c=starredshift, vmin=minvel, vmax=maxvel, cmap=cm , marker='.')  #note the colourmap for the redshift amount
-cbar = plt.colorbar(red)
-cbar.set_label('Radial Velocity (km/s)', rotation=90)
-plt.show()
-
-figure(figsize=(36,18))             #units are inches
-fig.set_dpi(1200)           #sets resolution of image in pixels per square inch?
-fig.savefig('star-redshift.png')
+    # version for analysis
+    red = plt.scatter(starequats, starpolar, s=scale, c=starredshift, vmin=minvel, vmax=maxvel, cmap=cm , marker='.', linewidths=lwidth)  #note the colourmap for the redshift amount
+    cbar = plt.colorbar(red)
+    cbar.set_label('Radial Velocity (km/s)', rotation=90)
+    fig.savefig(dir_path+f'\\star-redshift{name}.png', dpi=DPI)
 
 
 totalpoints.close()
@@ -136,16 +135,16 @@ fuzcolours = array(fuzcolours)/256        #gets the rgb values between 0 and 1
 
 
 fig, ax = plt.subplots()
-plt.xlabel('Equatorial Angle (deg)')
-plt.ylabel('Polar Angle (deg)')
+ax.set_xlabel('Equatorial Angle (deg)')
+ax.set_ylabel('Polar Angle (deg)')
 ax.set_facecolor('k')
-plt.gca().invert_yaxis()
+ax.invert_yaxis()
 
 plt.scatter(fuzequats, fuzpolar, s=fuzbright, c=fuzcolours, marker='.')
 
 figure(figsize=(36,18))             #units are inches
 fig.set_dpi(1200)           #sets resolution of image in pixels per square inch?
-fig.savefig('fuzzymap.png')
+fig.savefig(dir_path+'\\fuzzymap.png')
 
 plt.clf()
 
@@ -164,6 +163,6 @@ plt.clf()
 
 # figure(figsize=(36,18))             #units are inches
 # fig.set_dpi(1200)           #sets resolution of image in pixels per square inch?
-# fig.savefig('fuzzy-redshift.png')
+# fig.savefig(dir_path+'fuzzy-redshift.png')
 
 totalfuzzy.close()
