@@ -67,17 +67,29 @@ for i in ["Back", "Down", "Front", "Left", "Right", "Up"]:      #each of the six
                     xpos, ypos, bluef, greenf, redf, size, veloc = float(xpos), float(ypos), float(bluef), float(greenf), float(redf), float(size), float(veloc)
                     #below code converts all data coordinates into a unified, spherical coordinate system
                     if i == "Up":
-                        polar = abs(ypos)
-                        if xpos < 0:
-                            equat = 360 + xpos
+                        u = abs(xpos) * sqrt(1 - (1/2 * (ypos/45)**2))
+                        v = abs(ypos) * sqrt(1 - (1/2 * (xpos/45)**2))
+                        polar = sqrt(u**2 + v**2)
+                        if xpos > 0 and ypos < 0:
+                            equat = degrees(arctan(xpos / abs(ypos)))  
+                        elif xpos > 0 and ypos > 0:
+                            equat = 180 - degrees(arctan(xpos / ypos))
+                        elif xpos < 0 and ypos > 0:
+                            equat = 180 + degrees(arctan(abs(xpos) / ypos))
                         else:
-                            equat = xpos
+                            equat = 360 - degrees(arctan(abs(xpos) / abs(ypos)))
                     elif i == "Down":
-                        polar = 180 - abs(ypos)
-                        if xpos < 0:
-                            equat = 360 + xpos
+                        u = abs(xpos) * sqrt(1 - (1/2 * (ypos/45)**2))
+                        v = abs(ypos) * sqrt(1 - (1/2 * (xpos/45)**2))
+                        polar = 180 - sqrt(u**2 + v**2)
+                        if xpos > 0 and ypos > 0:
+                            equat = degrees(arctan(xpos / ypos))   
+                        elif xpos > 0 and ypos < 0:
+                            equat = 180 - degrees(arctan(xpos / abs(ypos)))
+                        elif xpos < 0 and ypos < 0:
+                            equat = 180 + degrees(arctan(abs(xpos) / abs(ypos)))
                         else:
-                            equat = xpos
+                            equat = 360 - degrees(arctan(abs(xpos) / ypos))
                     elif i == "Front":
                         polar = abs(ypos - 90)
                         if xpos < 0:
@@ -116,17 +128,29 @@ for i in ["Back", "Down", "Front", "Left", "Right", "Up"]:      #each of the six
                     
                     #following computes the coordinate transform as before
                     if i == "Up":
-                        polar = abs(ypos)
-                        if xpos < 0:
-                            equat = 360 + xpos
+                        u = abs(xpos) * sqrt(1 - (1/2 * (ypos/45)**2))
+                        v = abs(ypos) * sqrt(1 - (1/2 * (xpos/45)**2))
+                        polar = sqrt(u**2 + v**2)
+                        if xpos > 0 and ypos < 0:
+                            equat = degrees(arctan(xpos / abs(ypos)))  
+                        elif xpos > 0 and ypos > 0:
+                            equat = 180 - degrees(arctan(xpos / ypos))
+                        elif xpos < 0 and ypos > 0:
+                            equat = 180 + degrees(arctan(abs(xpos) / ypos))
                         else:
-                            equat = xpos
+                            equat = 360 - degrees(arctan(abs(xpos) / abs(ypos)))
                     elif i == "Down":
-                        polar = 180 - abs(ypos)
-                        if xpos < 0:
-                            equat = 360 + xpos
+                        u = abs(xpos) * sqrt(1 - (1/2 * (ypos/45)**2))
+                        v = abs(ypos) * sqrt(1 - (1/2 * (xpos/45)**2))
+                        polar = 180 - sqrt(u**2 + v**2)
+                        if xpos > 0 and ypos > 0:
+                            equat = degrees(arctan(xpos / ypos))   
+                        elif xpos > 0 and ypos < 0:
+                            equat = 180 - degrees(arctan(xpos / abs(ypos)))
+                        elif xpos < 0 and ypos < 0:
+                            equat = 180 + degrees(arctan(abs(xpos) / abs(ypos)))
                         else:
-                            equat = xpos
+                            equat = 360 - degrees(arctan(abs(xpos) / ypos))
                     elif i == "Front":
                         polar = abs(ypos - 90)
                         if xpos < 0:
@@ -168,4 +192,6 @@ points.write('total point-like data.txt', overwrite=True, format='ascii')
 
 calibrated = Table(totalcalibrated, names=['Name', 'Equatorial', 'Polar', 'BlueFlux', 'GreenFlux', 'RedFlux', 'Parallax', 'RadialVelocity', 'Distance', 'Periodicity', 'Location'])
 calibrated.write('calibrated star data.txt', overwrite=True, format='ascii')
+
+
 
