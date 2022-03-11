@@ -31,12 +31,16 @@ fuzzydata = totalfuzzy.readlines()[1:]
 
 allstaraveflux, allfuzaveflux = [], []      #initialize arrays
 stararray, fuzarray = [], []
-starequats, starpolar, starbright, starcolours = [], [], [], []
-fuzequats, fuzpolar, fuzbright, fuzcolours = [], [], [], []
+starequats, starpolar, starbright, starcolours, starredshift = [], [], [], [], []
+fuzequats, fuzpolar, fuzbright, fuzcolours, fuzredshift = [], [], [], [], []
+
+cm = plt.cm.get_cmap('bwr')     #blue to red colourmap for the redshift graphs. white is the intermediate colour
+minvel = 0
+maxvel = 0
 
 for row in stardata:
     [name, equat, polar, bluef, greenf, redf, parallax, veloc, distance, period, location] = row.split()
-    bluef, greenf, redf = float(bluef), float(greenf), float(redf)       #cleans up variables
+    bluef, greenf, redf, veloc = float(bluef), float(greenf), float(redf), float(veloc)       #cleans up variables
     rgb = [bluef, greenf, redf]
     aveflux = average(rgb)          #averages the r g b flux values
     allstaraveflux.append(aveflux)      #adds it to a list
@@ -46,6 +50,18 @@ for row in stardata:
     norm = max(rgb)         #finds max flux value for normalization purposes.
     r, g, b = 255 * redf / norm, 255 * greenf / norm, 255 * bluef / norm            #assigns the rgb values
     starcolours.append(array([r, g, b]))
+    #below specifies the new min/max velocity to calibrate the redshift colourbar
+    if starredshift != []:
+        if veloc < min(starredshift):
+            minvel = veloc
+        elif veloc > max(starredshift):
+            maxvel = veloc
+    starredshift.append(veloc)  #adds the velocity of the current star to a redshift array for use in the graph
+
+if maxvel < -minvel:
+    maxvel = -minvel
+else:
+    minvel = -maxvell
     
 brightest = max(allstaraveflux)         #finds the brightest star for normalization purposes
 
@@ -55,6 +71,7 @@ for star in stararray:
 
 starcolours = array(starcolours)/256        #gets the rgb values between 0 and 1 (because the scatter function chucked a tantrum)
 
+#below plots the colour star map
 fig, ax = plt.subplots()            #initialize axes
 plt.xlabel('Equatorial Angle (deg)')
 plt.ylabel('Polar Angle (deg)')
@@ -67,12 +84,34 @@ figure(figsize=(36,18))             #units are inches
 fig.set_dpi(1200)           #sets resolution of image in pixels per square inch?
 fig.savefig('starmap.png')
 
+plt.clf()
+
+#the below plots the redshift map of the stars
+fig, ax = plt.subplots()
+plt.xlabel('Equatorial Angle (deg)')
+plt.ylabel('Polar Angle (deg)')
+ax.set_facecolor('k')
+plt.gca().invert_yaxis() 
+
+red = plt.scatter(starequats, starpolar, s=0.1, c=starredshift, vmin=minvel, vmax=maxvel, cmap=cm , marker='.')  #note the colourmap for the redshift amount
+cbar = plt.colorbar(red)
+cbar.set_label('Radial Velocity (km/s)', rotation=90)
+plt.show()
+
+figure(figsize=(36,18))             #units are inches
+fig.set_dpi(1200)           #sets resolution of image in pixels per square inch?
+fig.savefig('star-redshift.png')
+
+
 totalpoints.close()
 plt.clf()           #clears the current figure in order to create the next one
 
+minvel = 0
+maxvel = 0
+
 for row in fuzzydata:       #functionally identical to the star loop
     [name, equat, polar, bluef, greenf, redf, size, veloc, location] = row.split()
-    bluef, greenf, redf = float(bluef), float(greenf), float(redf)
+    bluef, greenf, redf, veloc = float(bluef), float(greenf), float(redf), float(veloc)
     rgb = [bluef, greenf, redf]
     aveflux = average(rgb)
     allfuzaveflux.append(aveflux)
@@ -82,6 +121,10 @@ for row in fuzzydata:       #functionally identical to the star loop
     norm = max(rgb)         #finds max flux value for normalization purposes.
     r, g, b = 255 * redf / norm, 255 * greenf / norm, 255 * bluef / norm
     fuzcolours.append(array([r, g, b]))
+    fuzredshift.append(veloc)
+    if fuzredshift != []:
+        if veloc < min(fuzredshift):
+            minvel = veloc
     
 brightest = max(allfuzaveflux)         #finds the brightest star for normalization purposes
 
@@ -90,6 +133,7 @@ for fuzzy in fuzarray:
     fuzbright.append(brightness)
 
 fuzcolours = array(fuzcolours)/256        #gets the rgb values between 0 and 1
+
 
 fig, ax = plt.subplots()
 plt.xlabel('Equatorial Angle (deg)')
@@ -102,5 +146,24 @@ plt.scatter(fuzequats, fuzpolar, s=fuzbright, c=fuzcolours, marker='.')
 figure(figsize=(36,18))             #units are inches
 fig.set_dpi(1200)           #sets resolution of image in pixels per square inch?
 fig.savefig('fuzzymap.png')
+
+plt.clf()
+
+# cm = plt.cm.get_cmap('Blues')
+
+# fig, ax = plt.subplots()
+# plt.xlabel('Equatorial Angle (deg)')
+# plt.ylabel('Polar Angle (deg)')
+# ax.set_facecolor('k')
+# plt.gca().invert_yaxis() 
+
+# red = plt.plot(fuzequats, fuzpolar, s=0.1, c=fuzredshift, vmin=-2000, vmax=2000, cmap=cm , marker='.')  #note the colourmap for the redshift amount
+# cbar = plt.colorbar(red)
+# cbar.set_label('Radial Velocity (km/s)', rotation=90)
+# plt.show()
+
+# figure(figsize=(36,18))             #units are inches
+# fig.set_dpi(1200)           #sets resolution of image in pixels per square inch?
+# fig.savefig('fuzzy-redshift.png')
 
 totalfuzzy.close()
