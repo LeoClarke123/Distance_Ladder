@@ -66,7 +66,7 @@ else:
 brightest = max(allstaraveflux)         #finds the brightest star for normalization purposes
 
 for star in stararray:
-    brightness = sqrt(11) * log10((star[2] / brightest) + 1)            #defines scatter marker 'brightness' based on logarithmic algorithm. Spits out value between 0 and 1
+    brightness = 20*sqrt(11) * log10((star[2] / brightest) + 1)            #defines scatter marker 'brightness' based on logarithmic algorithm. Spits out value between 0 and 1
     starbright.append(brightness)
 
 starcolours = array(starcolours)/256        #gets the rgb values between 0 and 1 (because the scatter function chucked a tantrum)
@@ -78,7 +78,7 @@ ax.set_ylabel('Polar Angle (deg)')
 ax.set_facecolor('k')
 ax.invert_yaxis()        #flips the y-axis so that polar angle is 0 at due north
 
-plt.scatter(starequats, starpolar, s=starbright, c=starcolours, marker='.')
+starmap = plt.scatter(starequats, starpolar, s=starbright, c=starcolours, marker='.', linewidths=0)
 
 figure(figsize=(36,18))             #units are inches
 fig.set_dpi(1200)           #sets resolution of image in pixels per square inch?
@@ -128,7 +128,7 @@ for row in fuzzydata:       #functionally identical to the star loop
 brightest = max(allfuzaveflux)         #finds the brightest star for normalization purposes
 
 for fuzzy in fuzarray:
-    brightness = sqrt(11) * log10((fuzzy[2] / brightest) + 1)            #defines scatter marker 'brightness' based on logarithmic algorithm. Spits out value between 0 and 1
+    brightness = 20*sqrt(11) * log10((fuzzy[2] / brightest) + 1)            #defines scatter marker 'brightness' based on logarithmic algorithm. Spits out value between 0 and 1
     fuzbright.append(brightness)
 
 fuzcolours = array(fuzcolours)/256        #gets the rgb values between 0 and 1
@@ -140,7 +140,7 @@ ax.set_ylabel('Polar Angle (deg)')
 ax.set_facecolor('k')
 ax.invert_yaxis()
 
-plt.scatter(fuzequats, fuzpolar, s=fuzbright, c=fuzcolours, marker='.')
+plt.scatter(fuzequats, fuzpolar, s=fuzbright, c=fuzcolours, marker='.', linewidths=0)
 
 figure(figsize=(36,18))             #units are inches
 fig.set_dpi(1200)           #sets resolution of image in pixels per square inch?
@@ -148,21 +148,21 @@ fig.savefig(dir_path+'\\fuzzymap.png')
 
 plt.clf()
 
-# cm = plt.cm.get_cmap('Blues')
+cm = plt.cm.get_cmap('Blues_r')
 
-# fig, ax = plt.subplots()
-# plt.xlabel('Equatorial Angle (deg)')
-# plt.ylabel('Polar Angle (deg)')
-# ax.set_facecolor('k')
-# plt.gca().invert_yaxis() 
+fig, ax = plt.subplots()
+plt.xlabel('Equatorial Angle (deg)')
+plt.ylabel('Polar Angle (deg)')
+ax.set_facecolor('k')
+plt.gca().invert_yaxis() 
 
-# red = plt.plot(fuzequats, fuzpolar, s=0.1, c=fuzredshift, vmin=-2000, vmax=2000, cmap=cm , marker='.')  #note the colourmap for the redshift amount
-# cbar = plt.colorbar(red)
-# cbar.set_label('Radial Velocity (km/s)', rotation=90)
-# plt.show()
+red = plt.scatter(fuzequats, fuzpolar, s=1, c=fuzredshift, vmin=-1400, vmax=0, cmap=cm , marker='.', linewidths=0)  #note the colourmap for the redshift amount
+cbar = plt.colorbar(red)
+cbar.set_label('Radial Velocity (km/s)', rotation=90)
+plt.show()
 
-# figure(figsize=(36,18))             #units are inches
-# fig.set_dpi(1200)           #sets resolution of image in pixels per square inch?
-# fig.savefig(dir_path+'fuzzy-redshift.png')
+figure(figsize=(60,18))             #units are inches
+fig.set_dpi(1200)           #sets resolution of image in pixels per square inch?
+fig.savefig(dir_path+'\\fuzzy-redshift.png')
 
 totalfuzzy.close()
