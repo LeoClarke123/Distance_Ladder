@@ -4,13 +4,22 @@ Created on Tue Mar  1 14:43:01 2022
 
 @author: Ryan White     s4499039
 
-Plots a basic star map of the sky as seen from the observer. Also produces a basic fuzzy-object map in the same format.
-There's quite a bit i'm not happy with in here, but sunk cost fallacy made me get it to a useable state. 
+This program actually does a fair bit. In it's current state, it plots the following:
+    - 'fuzzymap.png': a map of the fuzzy objects in the sky, with approximate true colour
+    - 'fuzzy-redshift.png': a redshift map of the fuzzy objects in the sky
+    - 'starmap.png': an approximate true colour map of the stars in the sky
+    - 'star-redshift-analysis.png': a redshift star map with grids for each axis and plots of ellipses for the inferred star clusters
+    - 'star-redshift-pretty.png': a redshift starmap with plot parameters such that it is aesthetically pleasing and document-friendly
 
-Needs fixing:
-    - The brightness of each point
-    - The colour of each point (they're currently too vibrant)
-    - Each scatter point has a strange circle around it which I'm not sure how to fix.
+To do this, it currently reads from three files which must be within the same directory as starmap.py:
+    total point-like data.txt
+    total fuzzy data.txt
+    star clusters.txt
+
+Since 'star clusters.txt' is only used by this file, I'll explain the required format for it here, "x y horizontal vertical theta", where:
+    'x' and 'y' correspond to the (x,y) coordinates of the center of the ellipse
+    'horizontal' and 'vertical' correspond to the purely x-axis and y-axis extent of the ellipse from the center
+    'theta' corresponds to the angle that the semi-major axis makes relative to the positive-x-axis where the ellipse center is the origin
 """
 
 from numpy import *
@@ -20,12 +29,21 @@ import os
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import figure
 import matplotlib.ticker as plticker
+import matplotlib.patches as patches
+import pandas as pd
 
 
 
 dir_path = os.path.dirname(os.path.realpath(__file__))  #finds the path of this program to use later
 totalpoints = open(dir_path+"/total point-like data.txt", "r")       #opens and reads existing data. 
 totalfuzzy = open(dir_path+"/total fuzzy data.txt", "r")
+
+clusters = pd.read_csv(dir_path+'/star clusters.txt', delimiter=' ')
+cluster_xlocs = clusters['x']
+cluster_ylocs = clusters['y']
+cluster_x_extents = clusters['horizontal']
+cluster_y_extents = clusters['vertical']
+cluster_angles = clusters['theta']
 
 
 stardata = totalpoints.readlines()[1:]      #assigns the data
@@ -97,12 +115,21 @@ for (scale,lwidth,name,DPI,analysis) in [(5,0,'-pretty',400,0), (0.4,0,'-analysi
     ax.set_facecolor('k')
     ax.invert_yaxis() 
     if analysis == 1:
+        #the below plots major and minor gridlines according to the specified variables
         loc1 = plticker.MultipleLocator(base=5.0) # this locator puts ticks at regular intervals
         loc2 = plticker.MultipleLocator(base=5.0)
         ax.xaxis.set_minor_locator(loc1)
         ax.yaxis.set_minor_locator(loc2)
         ax.grid(which='major', axis='both', color='w', linestyle='--', linewidth=0.2)
         ax.grid(which='minor', axis='both', color='w', linestyle=':', linewidth=0.1)
+        
+        #the below plots existing identified star clusters on top of the image
+        for cluster in range(len(clusters)):
+            x = cluster_xlocs[cluster]; y = cluster_ylocs[cluster]; theta = -cluster_angles[cluster] #angle in deg, and negative due to the flipped y-axis (polar coords)
+            major = 2 * cluster_x_extents[cluster] / cos(theta*pi/180)  #calculates length of major axis from the x-extent and the angle (converted to radians)
+            minor = 2 * cluster_y_extents[cluster] / sin(pi/2 - theta*pi/180)   #calculates length of minor axis from the y-extent and the angle (converted to radians)
+            ellipse = patches.Ellipse(xy=(x, y), width=major, height=minor, angle=theta, fill=False, edgecolor='r', linewidth=0.1)  #creates the ellipse
+            ax.add_patch(ellipse)       #adds the ellipse to the image
 
     # version for analysis
     red = plt.scatter(starequats, starpolar, s=scale, c=starredshift, vmin=minvel, vmax=maxvel, cmap=cm , marker='.', linewidths=lwidth)  #note the colourmap for the redshift amount

@@ -1,1 +1,5 @@
-CentralLocation a b theta
+x y horizontal vertical theta
+75 2 55 2 0
+18.2 36.5 10 4 25
+43.5 38.5 5 2 -5
+76 34 22 7 -18
