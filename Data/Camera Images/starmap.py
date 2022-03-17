@@ -19,6 +19,8 @@ from astropy.table import Table
 import os 
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import figure
+import matplotlib.ticker as plticker
+
 
 
 dir_path = os.path.dirname(os.path.realpath(__file__))  #finds the path of this program to use later
@@ -87,13 +89,20 @@ fig.savefig(dir_path+'\\starmap.png')
 plt.clf()
 
 # make 2 versions, one for analysis (blank name) and one for inclusion in report ('pretty' name)
-for (scale,lwidth,name,DPI) in [(0.1,0,'',1200),(5,0,'-pretty',400)]:
+for (scale,lwidth,name,DPI,analysis) in [(5,0,'-pretty',400,0), (0.4,0,'-analysis',1200,1)]:
     #the below plots the redshift map of the stars
     fig, ax = plt.subplots(figsize=(12,6))  #units are inches
     ax.set_xlabel('Equatorial Angle (deg)')
     ax.set_ylabel('Polar Angle (deg)')
     ax.set_facecolor('k')
     ax.invert_yaxis() 
+    if analysis == 1:
+        loc1 = plticker.MultipleLocator(base=5.0) # this locator puts ticks at regular intervals
+        loc2 = plticker.MultipleLocator(base=5.0)
+        ax.xaxis.set_minor_locator(loc1)
+        ax.yaxis.set_minor_locator(loc2)
+        ax.grid(which='major', axis='both', color='w', linestyle='--', linewidth=0.2)
+        ax.grid(which='minor', axis='both', color='w', linestyle=':', linewidth=0.1)
 
     # version for analysis
     red = plt.scatter(starequats, starpolar, s=scale, c=starredshift, vmin=minvel, vmax=maxvel, cmap=cm , marker='.', linewidths=lwidth)  #note the colourmap for the redshift amount
