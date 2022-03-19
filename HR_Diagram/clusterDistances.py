@@ -8,7 +8,10 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import os 
+
 import HR as HR
+
+__author__ = "Ciaran Komarakul-Greene, s4528583"
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
