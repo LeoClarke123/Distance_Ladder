@@ -8,26 +8,24 @@ import matplotlib.pyplot as plt
 import warnings
 import os 
 
+def fluxToApp(flux):
+    return np.log(flux)
 
 def appToAbs(m,d):
     # Convert apparent to absolute magnitudes given distance.
     return m + 2*np.log(d) 
 
-def plotHR(MRs, MGs, MBs, ax: plt.Axes, col=None):
+def plotHR(MRs, MGs, MBs, ax: plt.Axes, col=None, lab=''):
     """
     Given a collection (iterables of same length) of red, green, blue
         absolute magnitudes, compute & plot the HR diagram, 
-        on the given axis "ax" with colour "col".
+        on the given axis "ax" with colour "col" and label "lab".
     Note that this does not create figures.
     """
-    ax.scatter(MRs - MBs, MGs, edgecolors=col)
-
-    ax.set_title('HR Diagram')
-    ax.set_ylabel('Absolute green magnitudes')
-    ax.set_xlabel('$\log(F_{Red}) - \log(F_{Blue})$')
+    ax.scatter(MRs - MBs, MGs, edgecolors=col, label=lab)
     ax.grid()
 
-def plotBaseline():
+def plotBaseline(colour='b'):
     """
     c.f. baselineHR.ipynb for explanation, this is here
         for convenience in later plotting
@@ -44,7 +42,15 @@ def plotBaseline():
     filtStarDists = np.array(filtStars['Distance']) # distances
 
     fig, ax = plt.subplots(1,1)
-    plotHR(*list(map(lambda x: appToAbs(np.log(x), filtStarDists),[filtStarRed, filtStarGreen, filtStarBlue])), ax)
+    # the first argument to plotHR does the following:
+    #   maps appToAbs on each array of fluxes given the distance array filtStarDists
+    #   then converts to list, and unpacks as argument to plotHR 
+    plotHR(*list(map(lambda x: appToAbs(fluxToApp(x), filtStarDists),
+            [filtStarRed, filtStarGreen, filtStarBlue])), ax, col=colour, lab='Benchmark')
+
+    ax.set_title('HR Diagram')
+    ax.set_ylabel('Absolute green magnitudes')
+    ax.set_xlabel('$\log(F_{Red}) - \log(F_{Blue})$')
 
     return fig, ax
 
