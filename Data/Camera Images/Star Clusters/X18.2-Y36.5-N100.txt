@@ -1,5 +1,4 @@
 Name Equatorial Polar BlueFlux GreenFlux RedFlux Parallax RadialVelocity Distance Periodicity Location
-P08072 5.153 46.902 1.09e-14 5.72e-15 2.56e-15 0.002 -2.07 undef 0.0 FrontD01
 P10341 10.244 38.664 4.96e-16 3.37e-16 1.62e-16 0.0 -0.46 undef 0.0 UpD06
 P05465 15.236 35.448 8.43e-16 5.13e-16 2.4e-16 0.001 1.29 undef 0.0 UpD06
 P09026 16.752 33.69 3.56e-17 3.04e-17 1.79e-17 0.0 2.44 undef 0.0 UpD06
