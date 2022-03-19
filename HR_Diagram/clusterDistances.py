@@ -28,16 +28,16 @@ for clusterFilename in os.listdir(cluster_dir):
     if not clusterName in list(starClusters['ClusterName']):
         newClusters.append(clusterName)
 
+# TODO: if files have since changed then errors will be raised; add some code to delete lines from csv that no longer exist in dir
+
 # if there are new clusters, append to csv file with default distance of 1
 if newClusters != []:
     newClusters_df = pd.DataFrame(zip(newClusters, np.ones(len(newClusters))), 
         columns=['ClusterName', 'Distances']) # create dataframe to concatenate
-    print("new clusters ", newClusters_df) # DEBUG
     starClusters = pd.concat((starClusters, newClusters_df), ignore_index=True)
 
 # save new copy of starClusters for future reference
 starClusters.to_csv(dir_path + '/clusterDistances.csv',index=False)
-print(starClusters) # DEBUG
 
 # for each star cluster, plot HR diagram, then save in folder
 for clusterName in list(starClusters['ClusterName']):
@@ -54,4 +54,5 @@ for clusterName in list(starClusters['ClusterName']):
                 [clusterRed, clusterGre, clusterBlu])), ax,col='red',lab=clusterName)
     ax.set_title(f'Cluster {clusterName} HR Diagram, distance = {clusterDist}')
     ax.legend()
+    ax.grid()
     fig.savefig(dir_path + f'/ClusterFigures/HR_{clusterName}.png')
