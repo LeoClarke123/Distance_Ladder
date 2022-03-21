@@ -14,7 +14,6 @@ from numpy import *
 from astropy.table import Table
 import os 
 import pandas as pd
-from astropy.table import Table
 
 def in_ellipse(xc, yc, a, b, angle, equat, polar):
     '''

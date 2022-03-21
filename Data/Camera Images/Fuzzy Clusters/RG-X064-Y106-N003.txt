@@ -1,0 +1,4 @@
+Name Equatorial Polar BlueFlux GreenFlux RedFlux Size RadialVelocity Location
+F03363 63.576 105.799 2.41e-17 1.5e-17 1.24e-17 14.23 -836.39 RightB05
+F03362 63.591 105.791 3.04e-17 2.35e-17 1.49e-17 11.77 -836.3 RightB05
+F03361 63.632 105.887 1.91e-17 1.51e-17 8.67e-18 16.7 -836.3 RightB05

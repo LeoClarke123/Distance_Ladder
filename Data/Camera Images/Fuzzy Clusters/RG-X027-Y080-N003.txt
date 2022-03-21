@@ -1,0 +1,4 @@
+Name Equatorial Polar BlueFlux GreenFlux RedFlux Size RadialVelocity Location
+F10586 26.837 79.936 4.58e-17 4.06e-17 2.38e-17 23.07 -559.97 FrontE03
+F10587 26.924 79.87 5.92e-17 5.1e-17 3.16e-17 20.33 -560.09 FrontE03
+F10585 26.934 79.931 6.85e-17 4.5e-17 2.75e-17 17.12 -559.77 FrontE03
