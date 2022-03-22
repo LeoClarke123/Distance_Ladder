@@ -49,13 +49,18 @@ for clusterName in list(starClusters['ClusterName']):
     clusterRed = np.array(clusterData['RedFlux'])
     clusterBlu = np.array(clusterData['BlueFlux'])
     clusterGre = np.array(clusterData['GreenFlux'])
+    clusterPer = np.array(clusterData['Periodicity'])
     clusterDist = starClusters.loc[starClusters['ClusterName'] == clusterName].iloc[0,1]
 
     fig, ax = HR.plotBaseline()
     # compute apparent magnitudes, unpack as arguemnts, then plot on same figure
     HR.plotHR(*list(map(lambda x: HR.appToAbs(HR.fluxToApp(x), clusterDist),
-                [clusterRed, clusterGre, clusterBlu])), ax,col='red',lab=clusterName)
+                [clusterRed, clusterGre, clusterBlu])), clusterPer, ax,col='red',lab=clusterName, scale=10)
     ax.set_title(f'Cluster {clusterName} HR Diagram, distance = {clusterDist}')
     ax.legend()
     ax.grid()
-    fig.savefig(dir_path + f'/ClusterFigures/HR_{clusterName}.png')
+    dpi_scale = 2
+    fig.savefig(dir_path + f'/ClusterFigures/HR_{clusterName}.png', dpi=dpi_scale*100)
+    plt.close(fig)
+    
+print('done')
