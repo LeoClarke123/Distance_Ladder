@@ -11,6 +11,7 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import figure
+from sklearn.metrics import r2_score
 
 def in_ellipse(xc, yc, a, b, angle, equat, polar):
     '''
@@ -42,31 +43,43 @@ galaxclusters = pd.read_csv(dir_path + "\\Camera Images\\fuzzy clusters.txt", de
 xrayEquat = xrays['Equatorial']; xrayPolar = xrays['Polar']; xrayPhot = xrays['PhotonsDetected']
 starCx = starclusters['x']; starCy = starclusters['y']; starChor = starclusters['horizontal']; starCvert = starclusters['vertical']; starCangle = starclusters['theta']
 GalaxNames = galaxclusters['Name']; GalaxNum = galaxclusters['No.Members']; GalaxVeloc = galaxclusters['RadialVelocity']
+Sclustername = star_c_distances['ClusterName']; Sclusterdist = star_c_distances['Distances']
 
 i = 0
-X = []; Xabs = []
-Y = []
+vel = []; Logvel = []
+Logphotons = []
+GalaxDists = []
 for source in range(len(xrays)):
     if xrayPhot[source] > 100000:
         for cluster in range(len(starclusters)):
             if in_ellipse(starCx[cluster], starCy[cluster], starChor[cluster], starCvert[cluster], starCangle[cluster], xrayEquat[source], xrayPolar[source]):
-                print("h")
+                print(xrayPhot[source], "X-Ray Photons in star cluster X =", starCx[cluster], "and Y =",starCy[cluster])
                 i += 1
-                print("i =", i)
     else:
         for cluster in range(len(galaxclusters)):
             [prefix, xpos, ypos, pop] = GalaxNames[cluster].split('-')
             xpos = float(xpos[-3:]); ypos = float(ypos[-3:]); pop = float(pop[-3:])
             if in_area(xpos, ypos, xrayEquat[source], xrayPolar[source], GalaxVeloc[cluster]):
-                print("y")
-                print(xrayPhot[source], " Photons in cluster with speed ", GalaxVeloc[cluster], " with name ", GalaxNames[cluster])
-                Y.append(log(xrayPhot[source])); X.append(GalaxVeloc[cluster]); Xabs.append(log(abs(GalaxVeloc[cluster])))
+                #print(xrayPhot[source], " Photons in cluster with speed ", GalaxVeloc[cluster], " with name ", GalaxNames[cluster])
+                Logphotons.append(log(xrayPhot[source])); vel.append(GalaxVeloc[cluster]); Logvel.append(log(abs(GalaxVeloc[cluster])))
+                distance = sqrt(max(xrayPhot) * (Sclusterdist.loc[Sclustername == "X187.0-Y122.0-N89"].iloc[0])**2 / xrayPhot[source])
+                GalaxDists.append(log(distance))
                 i += 1
-                print("i =", i)
                 break       #this break prevents double-counting the same X-Ray source for optically close clusters
 
 fig, ax = plt.subplots()            #initialize axes
-ax.set_xlabel('Log Absolute Radial Velocity (km/s)')
-ax.set_ylabel('Log Photons Detected from X-Ray Source')
+ax.set_ylabel('Log Absolute Radial Velocity (km/s)')
+ax.set_xlabel('Log Distance from X-Ray Source (unit)')
 #ax.invert_xaxis()
-plt.scatter(Xabs, Y)
+plt.scatter(GalaxDists, Logvel)
+
+z = polyfit(GalaxDists, Logvel, 1)
+p = poly1d(z)
+
+plt.plot(GalaxDists,p(GalaxDists),"r--", linewidth=0.5)
+text = f"$y={z[0]:0.3f}\;x{z[1]:+0.3f}$\n$R^2 = {r2_score(Logvel,p(GalaxDists)):0.3f}$"
+plt.gca().text(11.25, 6.54, text)
+ax.grid()
+figure(figsize=(20,15))             #units are inches
+fig.set_dpi(300)
+fig.savefig(dir_path+'\\Velocity vs Distance for Galaxies.png')
