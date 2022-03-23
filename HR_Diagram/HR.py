@@ -12,8 +12,10 @@ import os
 
 __author__ = "Ciaran Komarakul-Greene, s4528583"
 
+PARALLAX_LIMIT = 0.01
+
 def fluxToApp(flux):
-    return np.log(flux)
+    return -np.log(flux)
 
 def appToAbs(m,d):
     # Convert apparent to absolute magnitudes given distance.
@@ -36,19 +38,19 @@ def plotHR(MRs, MGs, MBs, MPs, ax: plt.Axes, col=None, lab='', scale=1):
     """
     # plot all stars with no listed period
     class0Stars = MPs == 0
-    ax.scatter(MRs[class0Stars] - MBs[class0Stars], MGs[class0Stars], marker='.', 
+    ax.scatter(MBs[class0Stars] - MRs[class0Stars], MGs[class0Stars], marker='.', 
         c=col, s=scale, label=lab)
 
     # plot 18-21 period (class 1) stars with diamond
     # take bool arrays, cast to int, then multiply
     class1Stars = (18 < MPs).astype('int') * (MPs < 21).astype('int') 
-    ax.scatter(MRs[class1Stars] - MBs[class1Stars], MGs[class1Stars], marker='x', 
+    ax.scatter(MBs[class1Stars] - MRs[class1Stars], MGs[class1Stars], marker='x', 
         c=col, s=scale, label=lab + ' Class 1')
 
     # plot 48-52 period (class 2) stars with square
     class2Stars = (48 < MPs).astype('int') * (MPs < 52).astype('int') 
         # bool array of stars class 2
-    ax.scatter(MRs[class2Stars] - MBs[class2Stars], MGs[class2Stars], marker='^', 
+    ax.scatter(MBs[class2Stars] - MRs[class2Stars], MGs[class2Stars], marker='^', 
         c=col, s=scale, label=lab + ' Class 2')
 
     # there SHOULD NOT be other stars that do not fit in these three classes
@@ -62,10 +64,8 @@ def plotBaseline(colour='b'):
     dir_path = os.path.dirname(os.path.realpath(__file__))
     calStars = pd.read_csv(dir_path + '/../Data/Camera Images/calibrated star data.txt',
         delimiter=' ')
-    
-    parallaxLimit = 0.01
 
-    filtStars = calStars.loc[calStars['Parallax'] > parallaxLimit]
+    filtStars = calStars.loc[calStars['Parallax'] > PARALLAX_LIMIT]
     filtStarBlue = np.array(filtStars['BlueFlux']) # blue flux
     filtStarGreen = np.array(filtStars['GreenFlux']) # green flux
     filtStarRed = np.array(filtStars['RedFlux']) # red flux
@@ -81,8 +81,9 @@ def plotBaseline(colour='b'):
             lab='Benchmark')
 
     ax.set_title('HR Diagram')
-    ax.set_ylabel('Absolute green magnitudes')
-    ax.set_xlabel('$\log(F_{Red}) - \log(F_{Blue})$')
+    ax.set_ylabel('$M_G$')
+    ax.set_xlabel('$M_B - M_R$')
+    ax.invert_yaxis()
 
     return fig, ax
 

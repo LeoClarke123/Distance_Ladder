@@ -22,11 +22,16 @@ Throughtout this document I have referred to Carroll \& Ostlie p.61 to base my d
 
 One magnitude will indicate a difference of a factor \(e\) between fluxes,
 \begin{equation}
-    \frac{F_1}{F_2} = e^{m_1-m_2}. \label{eqn:flux ratio}
+    \frac{F_2}{F_1} = e^{m_1-m_2}. \label{eqn:flux ratio}
 \end{equation}
 Taking the logarithm (base \(e\)) we have 
 \begin{equation}
-    m_1-m_2 = \log \frac{F_1}{F_2}. \label{eqn:log flux ratio}
+    m_1-m_2 = \log \frac{F_2}{F_1}. \label{eqn:log flux ratio}
+\end{equation}
+We set our scale so that when $F=1$ (units), we have \(m = 0\).
+Hence,
+\begin{equation}
+    m = - \log F . \label{eqn:log flux}
 \end{equation}
 
 Recall that we have
@@ -37,7 +42,7 @@ Recall that we have
 Here I choose to define an absolute magnitude $M$ to be the magnitude at $1 \text{pc}$ (here we take a parsec to be an arbitrary but natural unit).
 Combining equations \refeq{eqn:log flux ratio} and \refeq{eqn:flux}, we have
 \begin{equation}
-    e^{m-M} = \frac{F}{F_1} = {\left(\frac{d}{1\text{pc}}\right)}^2.  
+    e^{m-M} = \frac{F_1}{F} = {\left(\frac{d}{1\text{pc}}\right)}^2.  
 \end{equation}
 
 This gives us an equation for the distance, where \(d\) is in parsecs,

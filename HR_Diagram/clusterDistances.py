@@ -31,14 +31,21 @@ for clusterFilename in os.listdir(cluster_dir):
     if not clusterName in list(starClusters['ClusterName']):
         newClusters.append(clusterName)
 
-# if there are new clusters, append to csv file with default distance of 1
+# if there are new clusters, append to csv file with a rudimentary guess
+# at distance; I will match top to top from baseline below
+dir_path = os.path.dirname(os.path.realpath(__file__))
+calStars = pd.read_csv(dir_path + '/../Data/Camera Images/calibrated star data.txt',
+    delimiter=' ')
+filtStars = calStars.loc[calStars['Parallax'] > HR.PARALLAX_LIMIT]
+filtStarGreen = np.array(filtStars['GreenFlux']) # green flux
+filtStarDists = np.array(filtStars['Distance']) # distances
+baseline_minMG = min(HR.appToAbs(HR.fluxToApp(filtStarGreen), filtStarDists))
+
+# here we append dataframe with list of all new clusters
 if newClusters != []:
     newClusters_df = pd.DataFrame(zip(newClusters, np.ones(len(newClusters))), 
         columns=['ClusterName', 'Distances']) # create dataframe to concatenate
     starClusters = pd.concat((starClusters, newClusters_df), ignore_index=True)
-
-# save new copy of starClusters for future reference
-starClusters.to_csv(dir_path + '/clusterDistances.csv',index=False)
 
 # for each star cluster, plot HR diagram, then save in folder
 for clusterName in list(starClusters['ClusterName']):
@@ -48,7 +55,18 @@ for clusterName in list(starClusters['ClusterName']):
     clusterBlu = np.array(clusterData['BlueFlux'])
     clusterGre = np.array(clusterData['GreenFlux'])
     clusterPer = np.array(clusterData['Periodicity'])
-    clusterDist = starClusters.loc[starClusters['ClusterName'] == clusterName].iloc[0,1]
+
+    # here we implement rudimentary estimate
+    if clusterName in newClusters:
+        # get cluster max M_green
+        cluster_minMG = min(HR.fluxToApp(clusterGre))
+        # compare with baseline min and change to distance
+        clusterDist = HR.distModToDist(cluster_minMG - baseline_minMG)
+        # save to dataframe
+        starClusters.loc[starClusters['ClusterName'] == clusterName] = [clusterName, clusterDist]
+    else:
+        # distance already exists
+        clusterDist = starClusters.loc[starClusters['ClusterName'] == clusterName].iloc[0,1]
 
     fig, ax = HR.plotBaseline()
     # compute apparent magnitudes, unpack as arguemnts, then plot on same figure
@@ -61,5 +79,8 @@ for clusterName in list(starClusters['ClusterName']):
     dpi_scale = 2
     fig.savefig(dir_path + f'/ClusterFigures/HR_{clusterName}.png', dpi=dpi_scale*100)
     plt.close(fig)
-    
+
+# save new copy of starClusters for future reference
+starClusters.to_csv(dir_path + '/clusterDistances.csv',index=False)
+
 print('done')
