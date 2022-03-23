@@ -1,19 +1,31 @@
 """
-Code to produce multiple HR diagrams given RGB fluxes, distance compared with baseline. Compare with baselineHR.ipynb
+Code to produce multiple HR diagrams given RGB fluxes, 
+distance compared with baseline. Compare with baselineHR.ipynb.
+Confer distances.pdf for the units used in these diagrams.
 """
 
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import warnings
-import os 
+import os
+
+__author__ = "Ciaran Komarakul-Greene, s4528583"
 
 def fluxToApp(flux):
     return np.log(flux)
 
 def appToAbs(m,d):
     # Convert apparent to absolute magnitudes given distance.
-    return m + 2*np.log(d) 
+    return m - 2*np.log(d)
+
+def distModToDist(m_M):
+    return np.exp((m_M)/2)
+    
+def distShiftByModulus(d,m):
+    # shift a distance in pc given a modulus to shift UP by
+    # to be used to make adjustments to HR diagrams
+    return distModToDist(2*np.log(d)-m)
 
 def plotHR(MRs, MGs, MBs, MPs, ax: plt.Axes, col=None, lab='', scale=1):
     """
@@ -34,7 +46,8 @@ def plotHR(MRs, MGs, MBs, MPs, ax: plt.Axes, col=None, lab='', scale=1):
         c=col, s=scale, label=lab + ' Class 1')
 
     # plot 48-52 period (class 2) stars with square
-    class2Stars = (48 < MPs).astype('int') * (MPs < 52).astype('int') # bool array of stars class 2
+    class2Stars = (48 < MPs).astype('int') * (MPs < 52).astype('int') 
+        # bool array of stars class 2
     ax.scatter(MRs[class2Stars] - MBs[class2Stars], MGs[class2Stars], marker='^', 
         c=col, s=scale, label=lab + ' Class 2')
 
@@ -47,7 +60,8 @@ def plotBaseline(colour='b'):
         for convenience in later plotting
     """
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    calStars = pd.read_csv(dir_path + '/../Data/Camera Images/calibrated star data.txt',delimiter=' ')
+    calStars = pd.read_csv(dir_path + '/../Data/Camera Images/calibrated star data.txt',
+        delimiter=' ')
     
     parallaxLimit = 0.01
 
@@ -63,7 +77,8 @@ def plotBaseline(colour='b'):
     #   maps appToAbs on each array of fluxes given the distance array filtStarDists
     #   then converts to list, and unpacks as argument to plotHR 
     plotHR(*list(map(lambda x: appToAbs(fluxToApp(x), filtStarDists),
-            [filtStarRed, filtStarGreen, filtStarBlue])), filtStarPer, ax, col=colour, lab='Benchmark')
+            [filtStarRed, filtStarGreen, filtStarBlue])), filtStarPer, ax, col=colour, 
+            lab='Benchmark')
 
     ax.set_title('HR Diagram')
     ax.set_ylabel('Absolute green magnitudes')

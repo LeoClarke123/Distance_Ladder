@@ -1,7 +1,7 @@
 """
 Code to apply previously written HR.py to star cluster data.
 We will read star clusters from directory, then write to csv.
-    If star not already in csv, then set distance to 0.
+    If star not already in csv, then set distance to 1.
 Read off csv distance and plot against baseline.
 """
 import numpy as np
@@ -19,9 +19,9 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 cluster_dir = dir_path + "/../Data/Camera Images/Star Clusters/"
 
 starClusters = pd.read_csv(dir_path + '/clusterDistances.csv')
-# csv of format:
+# csv of format: (example)
 #    ClusterName, Distances
-#    X18-Y15-N101, 132
+#    X18.3-Y15.4-N101, 132
 
 # make sure all clusters accounted for
 # build up list of clusters that are not in the csv already
@@ -53,8 +53,9 @@ for clusterName in list(starClusters['ClusterName']):
     fig, ax = HR.plotBaseline()
     # compute apparent magnitudes, unpack as arguemnts, then plot on same figure
     HR.plotHR(*list(map(lambda x: HR.appToAbs(HR.fluxToApp(x), clusterDist),
-                [clusterRed, clusterGre, clusterBlu])), clusterPer, ax,col='red',lab=clusterName, scale=10)
-    ax.set_title(f'Cluster {clusterName} HR Diagram, distance = {clusterDist}')
+                [clusterRed, clusterGre, clusterBlu])), clusterPer, ax,col='red',
+                lab=clusterName, scale=10)
+    ax.set_title(f'Cluster {clusterName} HR Diagram, distance = {clusterDist:.1f} pc')
     ax.legend()
     ax.grid()
     dpi_scale = 2

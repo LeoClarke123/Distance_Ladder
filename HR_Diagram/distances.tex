@@ -1,0 +1,57 @@
+\documentclass[]{article}
+% chktex-file 21 chktex-file 46
+
+\usepackage{amsmath}
+\usepackage{mathtools}
+
+\usepackage{xcolor}
+\pagecolor{black} 
+\color{white}
+
+\usepackage[margin=20mm]{geometry}
+
+\author{Ciaran}
+\title{Defining distance units for use in HR diagram code}
+
+\allowdisplaybreaks{}
+
+\begin{document}
+\maketitle
+
+Throughtout this document I have referred to Carroll \& Ostlie p.61 to base my definitions from. 
+
+One magnitude will indicate a difference of a factor \(e\) between fluxes,
+\begin{equation}
+    \frac{F_1}{F_2} = e^{m_1-m_2}. \label{eqn:flux ratio}
+\end{equation}
+Taking the logarithm (base \(e\)) we have 
+\begin{equation}
+    m_1-m_2 = \log \frac{F_1}{F_2}. \label{eqn:log flux ratio}
+\end{equation}
+
+Recall that we have
+\begin{equation}
+    F = \frac{L}{4\pi r^2}. \label{eqn:flux}
+\end{equation}
+
+Here I choose to define an absolute magnitude $M$ to be the magnitude at $1 \text{pc}$ (here we take a parsec to be an arbitrary but natural unit).
+Combining equations \refeq{eqn:log flux ratio} and \refeq{eqn:flux}, we have
+\begin{equation}
+    e^{m-M} = \frac{F}{F_1} = {\left(\frac{d}{1\text{pc}}\right)}^2.  
+\end{equation}
+
+This gives us an equation for the distance, where \(d\) is in parsecs,
+\begin{equation}
+    d = e^{\frac{m-M}{2}}.
+\end{equation}
+Finally we compute the distance modulus,
+\begin{equation}
+    m-M = 2 \log d,
+\end{equation}
+which we can use to find that 
+\begin{equation}
+    M = m - 2 \log d.
+\end{equation}
+
+
+\end{document}
