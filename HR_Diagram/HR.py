@@ -43,15 +43,15 @@ def plotHR(MRs, MGs, MBs, MPs, ax: plt.Axes, col=None, lab='', scale=1):
 
     # plot 18-21 period (class 1) stars with diamond
     # take bool arrays, cast to int, then multiply
-    class1Stars = (18 < MPs).astype('int') * (MPs < 21).astype('int') 
+    class1Stars = np.logical_and(18 < MPs, MPs < 21) 
     ax.scatter(MBs[class1Stars] - MRs[class1Stars], MGs[class1Stars], marker='x', 
         c=col, s=scale, label=lab + ' Class 1')
 
     # plot 48-52 period (class 2) stars with square
-    class2Stars = (48 < MPs).astype('int') * (MPs < 52).astype('int') 
+    class2Stars = np.logical_and(48 < MPs, MPs < 52) 
         # bool array of stars class 2
     ax.scatter(MBs[class2Stars] - MRs[class2Stars], MGs[class2Stars], marker='^', 
-        c=col, s=scale, label=lab + ' Class 2')
+        c=col, s=scale, label=lab + ' Class 2')    
 
     # there SHOULD NOT be other stars that do not fit in these three classes
     ax.grid()
