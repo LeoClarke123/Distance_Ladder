@@ -27,7 +27,7 @@ def distModToDist(m_M):
 def distShiftByModulus(d,m):
     # shift a distance in pc given a modulus to shift UP by
     # to be used to make adjustments to HR diagrams
-    return distModToDist(2*np.log(d)-m)
+    return distModToDist(2*np.log(d)+m)
 
 def plotHR(MRs, MGs, MBs, MPs, ax: plt.Axes, col=None, lab='', scale=1):
     """
@@ -91,6 +91,4 @@ if __name__ == "__main__":
     # put code that you want to run from this file here
     warnings.filterwarnings('ignore')
 
-    # current code is just to make sure it works properly!
-    fig, ax = plotBaseline()
-    fig.show()
+    pass
