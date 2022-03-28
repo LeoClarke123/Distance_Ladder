@@ -48,6 +48,7 @@ Sclustername = star_c_distances['ClusterName']; Sclusterdist = star_c_distances[
 i = 0
 vel = []; Logvel = []
 Logphotons = []
+GalaxLogDists = []
 GalaxDists = []
 for source in range(len(xrays)):
     if xrayPhot[source] > 100000:
@@ -61,25 +62,28 @@ for source in range(len(xrays)):
             xpos = float(xpos[-3:]); ypos = float(ypos[-3:]); pop = float(pop[-3:])
             if in_area(xpos, ypos, xrayEquat[source], xrayPolar[source], GalaxVeloc[cluster]):
                 #print(xrayPhot[source], " Photons in cluster with speed ", GalaxVeloc[cluster], " with name ", GalaxNames[cluster])
-                Logphotons.append(log(xrayPhot[source])); vel.append(GalaxVeloc[cluster]); Logvel.append(log(abs(GalaxVeloc[cluster])))
+                Logphotons.append(log(xrayPhot[source])); vel.append(GalaxVeloc[cluster]); Logvel.append(-log(abs(GalaxVeloc[cluster])))
                 distance = sqrt(max(xrayPhot) * (Sclusterdist.loc[Sclustername == "X187.0-Y122.0-N89"].iloc[0])**2 / xrayPhot[source])
-                GalaxDists.append(log(distance))
+                GalaxLogDists.append(log(distance))
+                GalaxDists.append(distance)
                 i += 1
                 break       #this break prevents double-counting the same X-Ray source for optically close clusters
 
 fig, ax = plt.subplots()            #initialize axes
-ax.set_ylabel('Log Absolute Radial Velocity (km/s)')
-ax.set_xlabel('Log Distance from X-Ray Source (unit)')
+ax.set_ylabel('Radial Velocity (km/s)')
+ax.set_xlabel('Distance from X-Ray Source (pc)')
 #ax.invert_xaxis()
-plt.scatter(GalaxDists, Logvel)
+plt.scatter(GalaxDists, vel)
 
-z = polyfit(GalaxDists, Logvel, 1)
+z = polyfit(GalaxDists, vel, 1)
 p = poly1d(z)
 
 plt.plot(GalaxDists,p(GalaxDists),"r--", linewidth=0.5)
-text = f"$y={z[0]:0.3f}\;x{z[1]:+0.3f}$\n$R^2 = {r2_score(Logvel,p(GalaxDists)):0.3f}$"
-plt.gca().text(11.25, 6.54, text)
+text = f"$y={z[0]:0.5f}\;x{z[1]:+0.3f}$\n$R^2 = {r2_score(vel,p(GalaxDists)):0.3f}$"
+plt.gca().text(100000, -800, text)
 ax.grid()
+ax.ticklabel_format(axis='x', style='sci', scilimits=(0,3), useMathText=True)
+ax.set_ylim([-1200,0])
 figure(figsize=(20,15))             #units are inches
 fig.set_dpi(300)
 fig.savefig(dir_path+'\\Velocity vs Distance for Galaxies.png')
