@@ -3,6 +3,11 @@
 Created on Sun Mar 27 15:07:08 2022
 
 @author: ryanw
+
+This program analyses nearby (and resolved) galaxies to produce a rough rotation curve for each. It also does some analysis on these galaxies to infer key relationships between
+galaxy properties (to mixed results). 
+
+This program currently outputs a rotation curve for each nearby galaxy, as well as Luminosity-Mass graph. 
 """
 
 from numpy import *
@@ -14,6 +19,11 @@ import matplotlib.pyplot as plt
 from matplotlib.pyplot import figure
 
 def inclination_correction(major, minor, emax, method):
+    '''This function increases the rotation velocity of observed stars in galaxies depending on some inferred inclination. 
+    It does this by analysing the eccentricity of the observed galaxy shape, and comparing it to a near-perfect 'edge-on' galaxy, with eccentricity given by emax.
+    It will calculate the eccentricity of the observed galaxy by it's major and minor axes, and then use sine/cosine (depending on what the user wants), to infer
+    a multiplier for which, when the observed rotational velocity is multiplied by it, will return an estimation of the *actual* rotational velocity. 
+    '''
     eccentricity = sqrt(1 - (minor / major)**2)
     if method == "sine":
         velMultiplier = sin(pi/2 * (eccentricity / emax))

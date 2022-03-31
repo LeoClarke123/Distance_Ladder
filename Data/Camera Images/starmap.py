@@ -59,7 +59,7 @@ minvel = 0
 maxvel = 0
 
 for row in stardata:
-    [name, equat, polar, bluef, greenf, redf, parallax, veloc, distance, period, location] = row.split()
+    [name, equat, polar, bluef, greenf, redf, parallax, veloc, distance, period, periodunc, location] = row.split()
     bluef, greenf, redf, veloc = float(bluef), float(greenf), float(redf), float(veloc)       #cleans up variables
     rgb = [bluef, greenf, redf]
     aveflux = average(rgb)          #averages the r g b flux values

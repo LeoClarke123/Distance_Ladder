@@ -27,7 +27,7 @@ This program also checks whether stars have associated variable data, and then c
 
 The output data format is in the form of (for fuzzy stars and point-like/calibrated objects respectively):
     Name    Equatorial Angle (deg)  Polar Angle (deg)   Blue Flux (W/m^2/nm)    Green Flux ("")     Red Flux ("")   Size (arcsec)   Radial Velocity (km/s)  Location (picture)
-    Name    Equatorial Angle (deg)  Polar Angle (deg)   Blue Flux (W/m^2/nm)    Green Flux ("")     Red Flux ("")   Parallax (arcsec)   Radial Velocity (km/s)  Distance (pc)   Periodicity (hrs)  Location (picture)
+    Name    Equatorial Angle (deg)  Polar Angle (deg)   Blue Flux (W/m^2/nm)    Green Flux ("")     Red Flux ("")   Parallax (arcsec)   Radial Velocity (km/s)  Distance (pc)   Periodicity (hrs)  Period Uncertainty (+/- hrs)  Location (picture)
 
 Note that in the decided spherical coordinate system, polar angle is 0 at 'due north' [(0,0) in Up image].
     Positive polar direction is down 
@@ -43,6 +43,7 @@ from astropy.timeseries import LombScargle
 from astropy.table import Table
 import os
 import pandas as pd 
+from errorFormulae import period_uncert
 
 def coord_transform(direction, xpos, ypos):
     '''
@@ -94,8 +95,8 @@ def coord_transform(direction, xpos, ypos):
 dir_path = os.path.dirname(os.path.realpath(__file__))  #finds the path of this program to use later
 
 #following initializes all lists needed for program; P for point-like objects, C for calibrated stars, and F for fuzzy objects
-PNAMES, PEQUATS, PPOLARS, PBLUE, PGREEN, PRED, PPARA, PRVEL, PDIST, PPERIOD, PLOCATION = [], [], [], [], [], [], [], [], [], [], []
-CNAMES, CEQUATS, CPOLARS, CBLUE, CGREEN, CRED, CPARA, CRVEL, CDIST, CPERIOD, CLOCATION = [], [], [], [], [], [], [], [], [], [], []
+PNAMES, PEQUATS, PPOLARS, PBLUE, PGREEN, PRED, PPARA, PRVEL, PDIST, PPERIOD, PPERIODUNC, PLOCATION = [], [], [], [], [], [], [], [], [], [], [], []
+CNAMES, CEQUATS, CPOLARS, CBLUE, CGREEN, CRED, CPARA, CRVEL, CDIST, CPERIOD, CPERIODUNC, CLOCATION = [], [], [], [], [], [], [], [], [], [], [], []
 FNAMES, FEQUATS, FPOLARS, FBLUE, FGREEN, FRED, FSIZE, FRVEL, FLOCATION = [], [], [], [], [], [], [], [], []
 
 for i in ["Back", "Down", "Front", "Left", "Right", "Up"]:      #each of the six image directions
@@ -127,6 +128,7 @@ for i in ["Back", "Down", "Front", "Left", "Right", "Up"]:      #each of the six
                     [name, xpos, ypos, bluef, greenf, redf, parallax, veloc] = row.split()      #splits the row into strings of each data type instead of one long string
                     xpos, ypos, parallax = float(xpos), float(ypos), float(parallax)
                     period = 0          #sets variability period to 0 for stars with no variable nature. Variable stars period is changed in next loop if applicable
+                    period_unc = 0
                     # following for loop courtesy of Dr Benjamin Pope as per the "Extracting Period Information" section of the PHYS3080 Distance Ladder project info handout
                     for star in variablestars:
                         if name == star:
@@ -136,6 +138,8 @@ for i in ["Back", "Down", "Front", "Left", "Right", "Up"]:      #each of the six
                             freqs = linspace(1/100, 0.45, 10000)        #frequency grid
                             power = LS.power(freqs)     #calculates LS power
                             period = 1 / freqs[argmax(power)]       #finds most likely period from the frequency associated with maximum power
+                            
+                            period_unc = period_uncert(time, flux, runs = 10,  yerr = 0.015)    #finds the uncertainty in period from monte carlo sim developed by Leo Clarke
                     
                     #following computes the coordinate transform as before
                     [equat, polar] = coord_transform(i, xpos, ypos)
@@ -144,26 +148,26 @@ for i in ["Back", "Down", "Front", "Left", "Right", "Up"]:      #each of the six
                     if parallax > 0.005:
                         distance = round(abs(1 / parallax))
                         CNAMES.append(name), CEQUATS.append(str(round(equat, 3))), CPOLARS.append(str(round(polar, 3))), CBLUE.append(bluef), CRED.append(redf), CGREEN.append(greenf)
-                        CPARA.append(str(parallax)), CRVEL.append(veloc), CDIST.append(distance), CPERIOD.append(str(period)), CLOCATION.append(i+j+k)
+                        CPARA.append(str(parallax)), CRVEL.append(veloc), CDIST.append(distance), CPERIOD.append(str(period)), CPERIODUNC.append(str(period_unc)), CLOCATION.append(i+j+k)
                     else:
                         distance = "undef"
                     PNAMES.append(name), PEQUATS.append(str(round(equat, 3))), PPOLARS.append(str(round(polar, 3))), PBLUE.append(bluef), PRED.append(redf), PGREEN.append(greenf)
-                    PPARA.append(str(parallax)), PRVEL.append(veloc), PDIST.append(distance), PPERIOD.append(str(period)), PLOCATION.append(i+j+k)
+                    PPARA.append(str(parallax)), PRVEL.append(veloc), PDIST.append(distance), PPERIOD.append(str(period)), PPERIODUNC.append(str(period_unc)), PLOCATION.append(i+j+k)
             points.close()
 
 #below code arranges each variable into respective columns for a total data set
 totalfuzzy = [FNAMES, FEQUATS, FPOLARS, FBLUE, FGREEN, FRED, FSIZE, FRVEL, FLOCATION]
-totalpoints = [PNAMES, PEQUATS, PPOLARS, PBLUE, PGREEN, PRED, PPARA, PRVEL, PDIST, PPERIOD, PLOCATION]
-totalcalibrated = [CNAMES, CEQUATS, CPOLARS, CBLUE, CGREEN, CRED, CPARA, CRVEL, CDIST, CPERIOD, CLOCATION]
+totalpoints = [PNAMES, PEQUATS, PPOLARS, PBLUE, PGREEN, PRED, PPARA, PRVEL, PDIST, PPERIOD, PPERIODUNC, PLOCATION]
+totalcalibrated = [CNAMES, CEQUATS, CPOLARS, CBLUE, CGREEN, CRED, CPARA, CRVEL, CDIST, CPERIOD, CPERIODUNC, CLOCATION]
 
 #below code creates names for each column, and writes it to the file
 fuzzy = Table(totalfuzzy, names=['Name', 'Equatorial', 'Polar', 'BlueFlux', 'GreenFlux', 'RedFlux', 'Size', 'RadialVelocity', 'Location'])
 fuzzy.write('total fuzzy data.txt', overwrite=True, format='ascii')
 
-points = Table(totalpoints, names=['Name', 'Equatorial', 'Polar', 'BlueFlux', 'GreenFlux', 'RedFlux', 'Parallax', 'RadialVelocity', 'Distance', 'Periodicity', 'Location'])  #
+points = Table(totalpoints, names=['Name', 'Equatorial', 'Polar', 'BlueFlux', 'GreenFlux', 'RedFlux', 'Parallax', 'RadialVelocity', 'Distance', 'Periodicity', 'PeriodUnc', 'Location'])  #
 points.write('total point-like data.txt', overwrite=True, format='ascii')
 
-calibrated = Table(totalcalibrated, names=['Name', 'Equatorial', 'Polar', 'BlueFlux', 'GreenFlux', 'RedFlux', 'Parallax', 'RadialVelocity', 'Distance', 'Periodicity', 'Location'])
+calibrated = Table(totalcalibrated, names=['Name', 'Equatorial', 'Polar', 'BlueFlux', 'GreenFlux', 'RedFlux', 'Parallax', 'RadialVelocity', 'Distance', 'Periodicity', 'PeriodUnc', 'Location'])
 calibrated.write('calibrated star data.txt', overwrite=True, format='ascii')
 
 #now to transform coordinates of the X-Ray Data
