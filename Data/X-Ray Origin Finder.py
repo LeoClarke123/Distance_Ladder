@@ -89,6 +89,7 @@ for source in range(len(xrays)):
                 #now to append the data to the corresponding lists
                 Logphotons.append(log(xrayPhot[source])); vel.append(GalaxVeloc[cluster]); Logvel.append(-log(abs(GalaxVeloc[cluster])))
                 GalaxLogDists.append(log(distance)); GalaxDists.append(distance)
+                
                 i += 1
                 break       #this break prevents double-counting the same X-Ray source for optically close clusters
 
