@@ -65,11 +65,11 @@ i = 0       #main while loop iterating variable
 missing = 0
 
 while i <= len(fuzzydata)-1:
-    [name, equat, polar, bluef, greenf, redf, size, veloc, location] = fuzzydata[i].split()         #imports a row of data
+    [name, equat, polar, bluef, greenf, redf, size, veloc, dist, location] = fuzzydata[i].split()         #imports a row of data
     
     #following statements clean up the data a bit     
     bluef, greenf, redf, veloc= float(bluef), float(greenf), float(redf), float(veloc)
-    equat, polar = float(equat), float(polar)
+    equat, polar, dist = float(equat), float(polar), float(dist)
     
     members = []
     workingcluster = []         #initializes the 'current' cluster to focus on, to which individual fuzzy objects are added
@@ -78,10 +78,10 @@ while i <= len(fuzzydata)-1:
     
     while j >= 0:
         if j == 0:      #if this is the first fuzzy to look at
-            addendum =  str([name, equat, polar, size, veloc, location]) + "\n"
+            addendum =  str([name, equat, polar, size, veloc, dist, location]) + "\n"
             workingcluster.append(addendum)
             members.append(name)
-            workingdata.append([name, equat, polar, bluef, greenf, redf, size, veloc, location])
+            workingdata.append([name, equat, polar, bluef, greenf, redf, size, veloc, dist, location])
             checklist.append(1)
             j += 1
         elif i + j >= len(fuzzydata):       #if the current working cluster index is >= the total data length
@@ -98,12 +98,12 @@ while i <= len(fuzzydata)-1:
                     
                 #following code searches for the middle component of the cluster for naming reasons
                 middle = statistics.median(range(1, len(workingcluster)))
-                [nameM, equatM, polarM, bluefM, greenfM, redfM, sizeM, velocM, locationM] = fuzzydata[i+round(middle)].split()
-                equatM, polarM = float(equatM), float(polarM)
+                [nameM, equatM, polarM, bluefM, greenfM, redfM, sizeM, velocM, distM, locationM] = fuzzydata[i+round(middle)].split()
+                equatM, polarM, distM = float(equatM), float(polarM), float(distM)
                 clustername += str('-X' + '%03d' % round(equatM)) + "-Y" + str('%03d' % round(polarM)) + '-N' + str('%03d' % len(workingcluster))      #adds 3 digit, rounded equat and polar angles to clustername
                 
                 i += j   
-                thiscluster = pd.DataFrame(workingdata, columns=['Name', 'Equatorial', 'Polar', 'BlueFlux', 'GreenFlux', 'RedFlux', 'Size', 'RadialVelocity', 'Location'])
+                thiscluster = pd.DataFrame(workingdata, columns=['Name', 'Equatorial', 'Polar', 'BlueFlux', 'GreenFlux', 'RedFlux', 'Size', 'RadialVelocity', 'Distance', 'Location'])
                 if os.path.exists(dir_path+f'/Fuzzy Clusters/{clustername}.txt'):   #checks if there's another cluster with the same name, adds a '(1)' to clustername if so to differentiate duplicates
                     clusters.append([clustername + '(1)', len(workingcluster), veloc])  #adds the working cluster to the list of clusters
                     thiscluster.to_csv(dir_path+f'/Fuzzy Clusters/{clustername}(1).txt', index=None, sep=' ')    #writes currentcluster to file defined by clustername
@@ -119,17 +119,17 @@ while i <= len(fuzzydata)-1:
             
         else:
             #following code reads the data for a fuzzy object i+j =/= i, and cleans up the data a bit
-            [name2, equat2, polar2, bluef2, greenf2, redf2, size2, veloc2, location2] = fuzzydata[i+j].split()
+            [name2, equat2, polar2, bluef2, greenf2, redf2, size2, veloc2, dist2, location2] = fuzzydata[i+j].split()
             veloc2 = float(veloc2)
-            equat2, polar2 = float(equat2), float(polar2)
+            equat2, polar2, dist2 = float(equat2), float(polar2), float(dist2)
             
             #following if statement checks if the (i+j)th fuzzy object is close to the ith fuzzy in the sky, AND has a very similar radial velocity
             if (isclose(equat, equat2, abs_tol=closeness(polar, veloc, True)) and isclose(polar, polar2, abs_tol=closeness(polar, veloc, False))) and isclose(veloc, veloc2, rel_tol=0.01):
-                addendum = str([name2, equat2, polar2, size2, veloc2, location2]) + "\n"
+                addendum = str([name2, equat2, polar2, size2, veloc2, dist2, location2]) + "\n"
                 members.append(name2)
                 workingcluster.append(addendum)     #if the two objects are close, it adds the (i+j)th object to the working cluster
                 checklist.append(1)         #checks the object off so that it isn't read again
-                workingdata.append([name2, equat2, polar2, bluef2, greenf2, redf2, size2, veloc2, location2])
+                workingdata.append([name2, equat2, polar2, bluef2, greenf2, redf2, size2, veloc2, dist2, location2])
                 j += 1
             else:
                 #this code reads as the same above
@@ -143,12 +143,12 @@ while i <= len(fuzzydata)-1:
                     else:
                         clustername += "G"
                     middle = statistics.median(range(1, len(workingcluster)))
-                    [nameM, equatM, polarM, bluefM, greenfM, redfM, sizeM, velocM, locationM] = fuzzydata[i+round(middle)].split()
-                    equatM, polarM = float(equatM), float(polarM)
+                    [nameM, equatM, polarM, bluefM, greenfM, redfM, sizeM, velocM, distM, locationM] = fuzzydata[i+round(middle)].split()
+                    equatM, polarM, distM = float(equatM), float(polarM), float(distM)
                     clustername += str('-X' + '%03d' % round(equatM)) + "-Y" + str('%03d' % round(polarM)) + '-N' + str('%03d' % len(workingcluster))
                     i += j
                     
-                    thiscluster = pd.DataFrame(workingdata, columns=['Name', 'Equatorial', 'Polar', 'BlueFlux', 'GreenFlux', 'RedFlux', 'Size', 'RadialVelocity', 'Location'])
+                    thiscluster = pd.DataFrame(workingdata, columns=['Name', 'Equatorial', 'Polar', 'BlueFlux', 'GreenFlux', 'RedFlux', 'Size', 'RadialVelocity', 'Distance', 'Location'])
                     if os.path.exists(dir_path+f'/Fuzzy Clusters/{clustername}.txt'):  #checks if there's another cluster with the same name, adds a '(1)' to clustername if so to differentiate duplicates
                         clusters.append([clustername + '(1)', len(workingcluster), veloc])  #adds the working cluster to the list of clusters
                         thiscluster.to_csv(dir_path+f'/Fuzzy Clusters/{clustername}(1).txt', index=None, sep=' ')    #writes currentcluster to file defined by clustername

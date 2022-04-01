@@ -26,7 +26,7 @@ which are exactly as described, where "calibrated star data.txt" is a list of st
 This program also checks whether stars have associated variable data, and then calculates the periodicity if data is found. 
 
 The output data format is in the form of (for fuzzy stars and point-like/calibrated objects respectively):
-    Name    Equatorial Angle (deg)  Polar Angle (deg)   Blue Flux (W/m^2/nm)    Green Flux ("")     Red Flux ("")   Size (arcsec)   Radial Velocity (km/s)  Location (picture)
+    Name    Equatorial Angle (deg)  Polar Angle (deg)   Blue Flux (W/m^2/nm)    Green Flux ("")     Red Flux ("")   Size (arcsec)   Radial Velocity (km/s)  Distance (pc)   Location (picture)
     Name    Equatorial Angle (deg)  Polar Angle (deg)   Blue Flux (W/m^2/nm)    Green Flux ("")     Red Flux ("")   Parallax (arcsec)   Radial Velocity (km/s)  Distance (pc)   Periodicity (hrs)  Period Uncertainty (+/- hrs)  Location (picture)
 
 Note that in the decided spherical coordinate system, polar angle is 0 at 'due north' [(0,0) in Up image].
@@ -97,7 +97,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))  #finds the path of this 
 #following initializes all lists needed for program; P for point-like objects, C for calibrated stars, and F for fuzzy objects
 PNAMES, PEQUATS, PPOLARS, PBLUE, PGREEN, PRED, PPARA, PRVEL, PDIST, PPERIOD, PPERIODUNC, PLOCATION = [], [], [], [], [], [], [], [], [], [], [], []
 CNAMES, CEQUATS, CPOLARS, CBLUE, CGREEN, CRED, CPARA, CRVEL, CDIST, CPERIOD, CPERIODUNC, CLOCATION = [], [], [], [], [], [], [], [], [], [], [], []
-FNAMES, FEQUATS, FPOLARS, FBLUE, FGREEN, FRED, FSIZE, FRVEL, FLOCATION = [], [], [], [], [], [], [], [], []
+FNAMES, FEQUATS, FPOLARS, FBLUE, FGREEN, FRED, FSIZE, FRVEL, FDIST, FLOCATION = [], [], [], [], [], [], [], [], [], []
 
 for i in ["Back", "Down", "Front", "Left", "Right", "Up"]:      #each of the six image directions
     for j in ["A", "B", "C", "D", "E", "F"]:                    #each of the image column subdivisions
@@ -118,8 +118,11 @@ for i in ["Back", "Down", "Front", "Left", "Right", "Up"]:      #each of the six
                     #below code converts all data coordinates into a unified, spherical coordinate system
                     [equat, polar] = coord_transform(i, xpos, ypos)
                     #below code appends each variable to the associated string
+                    
+                    distance = (veloc - 1.643) / -0.00263       #this function derived from the x-ray flash to galaxy cluster distance/velocity relation
+                    
                     FNAMES.append(name), FEQUATS.append(str(round(equat, 3))), FPOLARS.append(str(round(polar, 3))), FBLUE.append(bluef), FRED.append(redf), FGREEN.append(greenf)
-                    FSIZE.append(str(size)), FRVEL.append(veloc), FLOCATION.append(i+j+k)
+                    FSIZE.append(str(size)), FRVEL.append(veloc), FLOCATION.append(i+j+k), FDIST.append(distance)
             fuzzy.close()
             #now to analyse/combine the point data
             with points as p:       #this section's coordinate transform is identical to the fuzzy section, but replaces size variable with parallax angle variable
@@ -156,12 +159,12 @@ for i in ["Back", "Down", "Front", "Left", "Right", "Up"]:      #each of the six
             points.close()
 
 #below code arranges each variable into respective columns for a total data set
-totalfuzzy = [FNAMES, FEQUATS, FPOLARS, FBLUE, FGREEN, FRED, FSIZE, FRVEL, FLOCATION]
+totalfuzzy = [FNAMES, FEQUATS, FPOLARS, FBLUE, FGREEN, FRED, FSIZE, FRVEL, FDIST, FLOCATION]
 totalpoints = [PNAMES, PEQUATS, PPOLARS, PBLUE, PGREEN, PRED, PPARA, PRVEL, PDIST, PPERIOD, PPERIODUNC, PLOCATION]
 totalcalibrated = [CNAMES, CEQUATS, CPOLARS, CBLUE, CGREEN, CRED, CPARA, CRVEL, CDIST, CPERIOD, CPERIODUNC, CLOCATION]
 
 #below code creates names for each column, and writes it to the file
-fuzzy = Table(totalfuzzy, names=['Name', 'Equatorial', 'Polar', 'BlueFlux', 'GreenFlux', 'RedFlux', 'Size', 'RadialVelocity', 'Location'])
+fuzzy = Table(totalfuzzy, names=['Name', 'Equatorial', 'Polar', 'BlueFlux', 'GreenFlux', 'RedFlux', 'Size', 'RadialVelocity', 'Distance', 'Location'])
 fuzzy.write('total fuzzy data.txt', overwrite=True, format='ascii')
 
 points = Table(totalpoints, names=['Name', 'Equatorial', 'Polar', 'BlueFlux', 'GreenFlux', 'RedFlux', 'Parallax', 'RadialVelocity', 'Distance', 'Periodicity', 'PeriodUnc', 'Location'])  #

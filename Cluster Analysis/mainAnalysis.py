@@ -32,6 +32,9 @@ def inclination_correction(major, minor, emax, method):
     return velMultiplier
 
 def radial_distance(galaxX, galaxY, starX, starY):
+    '''This function finds an approximate distance that a star is from the center of the galaxy.
+    (Does not account for inclination)
+    '''
     deltaX = starX - galaxX
     deltaY = galaxY - starY
     distance = sqrt((deltaX)**2 + (deltaY)**2)
@@ -52,40 +55,49 @@ clusterMaxVel = []
 clusterGreenLumins = []
 
 StarClusters = []
+#the following loop adds all clusternames to a list StarClusters
 for clusterFilename in os.listdir(clusterpath):
     clusterName = clusterFilename[0:-4] # remove ".txt" extension - thank you Ciaran!
     StarClusters.append(clusterName)
     
+#now to analyse each cluster
 for cluster in StarClusters:
     [clusterX, clusterY, clusterN] = cluster.split("-")
-    clusterX = float(clusterX[1:]); clusterY = float(clusterY[1:]); clusterN = float(clusterN[1:])
+    clusterX = float(clusterX[1:]); clusterY = float(clusterY[1:]); clusterN = float(clusterN[1:])      #cleans up the data coming from the cluster name
     
-    stardata = pd.read_csv(clusterpath + "/" + cluster + ".txt", delimiter=' ')
+    stardata = pd.read_csv(clusterpath + "/" + cluster + ".txt", delimiter=' ')     #loads the cluster data
     
     starvels = stardata['RadialVelocity'] - median(stardata['RadialVelocity'])  #accounts for the proper motion of the galaxy by subtracting the median velocity from all of the star velocities
     
-    major = ellipsedata.loc[ellipsedata['x'] == clusterX].iloc[0,2]; minor = ellipsedata.loc[ellipsedata['x'] == clusterX].iloc[0,3];
-    theta = ellipsedata.loc[ellipsedata['x'] == clusterX].iloc[0,4];
+    #finds the observational characteristics of the nearby galaxy
+    major = ellipsedata.loc[ellipsedata['x'] == clusterX].iloc[0,2]
+    minor = ellipsedata.loc[ellipsedata['x'] == clusterX].iloc[0,3]
+    theta = ellipsedata.loc[ellipsedata['x'] == clusterX].iloc[0,4]
     
     
-    starvels = abs(starvels * 1 / inclination_correction(major, minor, emax, "sine"))
+    starvels = abs(starvels * 1 / inclination_correction(major, minor, emax, "sine"))   #estimates the actual rotation velocity via an inclination correction
     
     radius = []
+    #the following loop estimates the radial position that a star is from the center of the galaxy
     #the following assumes that *all* galaxies are approximately flat spirals. 
     for index, star in stardata.iterrows():
         radPosition = radial_distance(median(stardata['Equatorial']), median(stardata['Polar']), stardata['Equatorial'].loc[index], stardata['Polar'].loc[index])
         radius.append(radPosition)
-        
+    
+    #the following finds the distance to the nearby galaxy
     distance = clusterdistances.loc[clusterdistances['ClusterName'] == cluster].iloc[0,1]
     distanceMetres = distance * 3.086 * 10**16
     
-    clusterRadius = distanceMetres * sin(max(radius) * pi / 180) / 1000
-    M = clusterRadius * max(starvels)**2 / (6.637 * 10**-11); clusterMasses.append(M)
-    clusterRadii.append(clusterRadius); clusterMaxVel.append(max(starvels))
-    GreenLumin = sum(stardata['GreenFlux']) * 4 * pi * distanceMetres**2; clusterGreenLumins.append(GreenLumin)
     
-    radius = radius / max(radius)
+    clusterRadius = distanceMetres * sin(max(radius) * pi / 180) / 1000     #estimates galaxy radius from it's optical extent and the distance to it
+    M = clusterRadius * max(starvels)**2 / (6.637 * 10**-11); clusterMasses.append(M)       #estimates TOTAL galaxy mass from the virial theorem
+    clusterRadii.append(clusterRadius); clusterMaxVel.append(max(starvels))     #add data to lists
+    #the following finds galaxy luminosity by adding the luminosity of all of the stars
+    GreenLumin = sum(stardata['GreenFlux']) * 4 * pi * distanceMetres**2; 
+    clusterGreenLumins.append(GreenLumin)     #append luminosity to list of all galaxy luminosities
     
+    #the following plots a rotation curve of the currently analysed galaxy
+    radius = radius / max(radius)       #finds proportion of galactic radius that star is away from the center
     fig, ax = plt.subplots()
     plt.scatter(radius, starvels, s=10, linewidth=0)
     ax.set_ylabel("Rotational Velocity (km/s)")
@@ -97,7 +109,7 @@ for cluster in StarClusters:
     
     
 
-
+#the following removes severe outliers from the data
 for index, cluster in enumerate(clusterMasses):
     if log10(cluster) > 27:
         del clusterMasses[index]
@@ -105,6 +117,7 @@ for index, cluster in enumerate(clusterMasses):
         del clusterRadii[index]
         del clusterMaxVel[index]
 
+#this plots
 fig, ax = plt.subplots()
 plt.scatter(log10(clusterMasses), log10(clusterGreenLumins))
 ax.set_ylabel("Galaxy V Band Luminosity (log10 W)")
