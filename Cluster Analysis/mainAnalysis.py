@@ -43,7 +43,7 @@ def radial_distance(galaxX, galaxY, starX, starY):
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 clusterpath = dir_path.replace("Cluster Analysis", "Data\Camera Images\Star Clusters")
-
+galaxData = pd.read_csv(clusterpath.replace("\Star Clusters", "/total fuzzy data.txt"), delimiter=' ')
 ellipsedata = pd.read_csv(clusterpath.replace("\Star Clusters", "/star clusters.txt"), delimiter=' ')
 clusterdistances = pd.read_csv(dir_path.replace("Cluster Analysis", "HR_Diagram/clusterDistances.csv"), delimiter=',')
 
@@ -75,7 +75,7 @@ for cluster in StarClusters:
     theta = ellipsedata.loc[ellipsedata['x'] == clusterX].iloc[0,4]
     
     
-    starvels = abs(starvels * 1 / inclination_correction(major, minor, emax, "sine"))   #estimates the actual rotation velocity via an inclination correction
+    starvels = abs(starvels * 1 / inclination_correction(major, minor, emax, "cos"))   #estimates the actual rotation velocity via an inclination correction
     
     radius = []
     #the following loop estimates the radial position that a star is from the center of the galaxy
@@ -102,7 +102,7 @@ for cluster in StarClusters:
     plt.scatter(radius, starvels, s=10, linewidth=0)
     ax.set_ylabel("Rotational Velocity (km/s)")
     ax.set_xlabel("Radius (prop. of Galactic Radius)")
-    ax.set_title(f'Rotation Curve of {cluster}')
+    #ax.set_title(f'Rotation Curve of {cluster}')
     ax.grid(axis='both', which='major')
     fig.savefig(dir_path+f'\\Rotation Curves\\{cluster}.png', dpi=200)
     plt.clf()
@@ -117,13 +117,56 @@ for index, cluster in enumerate(clusterMasses):
         del clusterRadii[index]
         del clusterMaxVel[index]
 
-#this plots
+#this plots luminosity vs galaxy mass
 fig, ax = plt.subplots()
 plt.scatter(log10(clusterMasses), log10(clusterGreenLumins))
-ax.set_ylabel("Galaxy V Band Luminosity (log10 W)")
-ax.set_xlabel("Galaxy Mass (log10 kg)")
-ax.set_title("Galaxy Luminosity vs Mass")
+ax.set_ylabel("Log10 Galaxy V Band Luminosity (W)")
+ax.set_xlabel("Log10 Galaxy Mass (kg)")
+#ax.set_title("Galaxy Luminosity vs Mass")
 
 fig.savefig(dir_path + '/Lumin-vs-Mass.png', dpi=200)
 
+plt.clf()
+
+#this calculates and plots the colour of a galaxy based on distance
+fig, ax = plt.subplots()
+colour = log(galaxData['RedFlux'] / galaxData['BlueFlux'])
+plt.scatter(log10(galaxData['Distance']), colour, s=0.1)
+ax.set_ylabel("Galaxy Colour ($M_B - M_R$)")
+ax.set_xlabel("Galaxy Distance (pc)")
+#ax.set_title("Galaxy Colour vs Distance")
+
+fig.savefig(dir_path + '/Colour-vs-Distance.png', dpi=200)
+
+plt.clf()
+
+#this plots the galaxy radii vs the mass
+fig, ax = plt.subplots()
+plt.scatter(log10(clusterMasses), log10(clusterRadii))
+ax.set_ylabel("Log10 Galaxy Radius (metres)")
+ax.set_xlabel("Log10 Galaxy Mass (kg)")
+#ax.set_title("Galaxy Radius vs Mass")
+
+fig.savefig(dir_path + '/Radius vs Mass.png', dpi=200)
     
+plt.clf()
+
+#this plots the cluster rotational velocity vs mass
+fig, ax = plt.subplots()
+plt.scatter(log10(clusterMasses), log10(clusterMaxVel))
+ax.set_ylabel("Log10 Galaxy Rot Velocity (km/s)")
+ax.set_xlabel("Log10 Galaxy Mass (kg)")
+#ax.set_title("Galaxy Rot Velocity vs Mass")
+
+fig.savefig(dir_path + '/Rot Velocity vs Mass.png', dpi=200)
+
+plt.clf()
+
+#this plots the size of a galaxy vs its distance
+fig, ax = plt.subplots()
+plt.scatter(log10((galaxData['RadialVelocity'] - 1.643) / -0.00263), log10(((galaxData['RadialVelocity'] - 1.643) / -0.00263) * tan(galaxData['Size'])), s=0.1)
+ax.set_ylabel("Log10 Galaxy Size (pc)")
+ax.set_xlabel("Log10 Galaxy Distance (pc)")
+#ax.set_title("Galaxy Size vs Distance")
+
+fig.savefig(dir_path + '/Size vs Distance.png', dpi=200)

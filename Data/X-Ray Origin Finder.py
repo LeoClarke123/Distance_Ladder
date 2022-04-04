@@ -70,6 +70,7 @@ vel = []; Logvel = []
 Logphotons = []
 GalaxLogDists = []
 GalaxDists = []
+distUnc = []
 
 #now to iterate over each X-Ray source!
 for source in range(len(xrays)):
@@ -89,6 +90,7 @@ for source in range(len(xrays)):
                 #now to append the data to the corresponding lists
                 Logphotons.append(log(xrayPhot[source])); vel.append(GalaxVeloc[cluster]); Logvel.append(-log(abs(GalaxVeloc[cluster])))
                 GalaxLogDists.append(log(distance)); GalaxDists.append(distance)
+                distUnc.append(distance * 20 / (Sclusterdist.loc[Sclustername == "X187.0-Y122.0-N89"].iloc[0]))
                 
                 i += 1
                 break       #this break prevents double-counting the same X-Ray source for optically close clusters
@@ -98,18 +100,23 @@ fig, ax = plt.subplots()            #initialize axes
 ax.set_ylabel('Radial Velocity (km/s)')
 ax.set_xlabel('Distance from X-Ray Source (pc)')
 #ax.invert_xaxis()
-plt.scatter(GalaxDists, vel)
+plt.scatter(GalaxDists, vel, s=3)
 
-z = polyfit(GalaxDists, vel, 1)     #this finds the linear fit for the data
+#distUnc = GalaxDists * 20 / (Sclusterdist.loc[Sclustername == "X187.0-Y122.0-N89"].iloc[0])
+
+z,cov = polyfit(GalaxDists, vel, 1, cov=True)     #this finds the linear fit for the data
 p = poly1d(z)
+gradUnc, intUnc = sqrt(diag(cov))
 
 plt.plot(GalaxDists,p(GalaxDists),"r--", linewidth=0.5)     #plot the trendline on top of the data
+plt.errorbar(GalaxDists, vel, xerr=distUnc, yerr=0.5, fmt=',', linewidth=0.5)
 
-text = f"$y={z[0]:0.5f}\;x{z[1]:+0.3f}$\n$R^2 = {r2_score(vel,p(GalaxDists)):0.3f}$"        #this defines the text to add onto the graph
-plt.gca().text(100000, -800, text)      #chooses the location for the text on the graph
+text = f"$v_r=({z[0]:0.5f} \pm {round(gradUnc,5)})\;x+({z[1]:0.3f} \pm {round(intUnc, 2)})  $\n$R^2 = {r2_score(vel,p(GalaxDists)):0.3f}$"        #this defines the text to add onto the graph
+plt.gca().text(50000, -1000, text)      #chooses the location for the text on the graph
 ax.grid()
 ax.ticklabel_format(axis='x', style='sci', scilimits=(0,3), useMathText=True)       #scientific notation for the x-axis
 ax.set_ylim([-1200,0])
 figure(figsize=(20,15))             #units are inches
 fig.set_dpi(300)
+
 fig.savefig(dir_path+'\\Velocity vs Distance for Galaxies.png')
