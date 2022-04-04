@@ -29,7 +29,7 @@ def distShiftByModulus(d,m):
     # to be used to make adjustments to HR diagrams
     return distModToDist(2*np.log(d)+m)
 
-def plotHR(MRs, MGs, MBs, MPs, ax: plt.Axes, col=None, lab='', scale=1):
+def plotHR(MRs, MGs, MBs, MPs, ax: plt.Axes, col=None, lab='Cluster ', scale=1):
     """
     Given a collection (iterables of same length) of red, green, blue
         absolute magnitudes, compute & plot the HR diagram, 
