@@ -2,7 +2,7 @@
 """
 Created on Sun Mar 20 12:15:56 2022
 
-@author: ryanw
+@author: Ryan White
 
 This program takes data in the form of X-Ray Strength/Position, Star Cluster Position/Distance, and Fuzzy Cluster Position to first assign X-Ray sources to fuzzy
 clusters and then find the distance to said cluster. 
@@ -62,6 +62,7 @@ xrayEquat = xrays['Equatorial']; xrayPolar = xrays['Polar']; xrayPhot = xrays['P
 starCx = starclusters['x']; starCy = starclusters['y']; starChor = starclusters['horizontal']; starCvert = starclusters['vertical']; starCangle = starclusters['theta']
 GalaxNames = galaxclusters['Name']; GalaxNum = galaxclusters['No.Members']; GalaxVeloc = galaxclusters['RadialVelocity']
 Sclustername = star_c_distances['ClusterName']; Sclusterdist = star_c_distances['Distances']
+SclusterUp = star_c_distances['Distance Upper Bound']; SclusterLow = star_c_distances['Distance Lower Bound']
 
 i = 0
 
@@ -87,10 +88,11 @@ for source in range(len(xrays)):
                 #print(xrayPhot[source], " Photons in cluster with speed ", GalaxVeloc[cluster], " with name ", GalaxNames[cluster])
                 
                 distance = sqrt(max(xrayPhot) * (Sclusterdist.loc[Sclustername == "X187.0-Y122.0-N89"].iloc[0])**2 / xrayPhot[source]) #calculates distance to this cluster
+                benchUnc = (SclusterUp.loc[Sclustername == "X187.0-Y122.0-N89"].iloc[0] - SclusterLow.loc[Sclustername == "X187.0-Y122.0-N89"].iloc[0]) / 2         #uncertainty in benchmark
                 #now to append the data to the corresponding lists
                 Logphotons.append(log(xrayPhot[source])); vel.append(GalaxVeloc[cluster]); Logvel.append(-log(abs(GalaxVeloc[cluster])))
                 GalaxLogDists.append(log(distance)); GalaxDists.append(distance)
-                distUnc.append(distance * 20 / (Sclusterdist.loc[Sclustername == "X187.0-Y122.0-N89"].iloc[0]))
+                distUnc.append((distance / 2) * benchUnc / (Sclusterdist.loc[Sclustername == "X187.0-Y122.0-N89"].iloc[0]))     #distance uncertainty of current cluster
                 
                 i += 1
                 break       #this break prevents double-counting the same X-Ray source for optically close clusters
@@ -102,21 +104,24 @@ ax.set_xlabel('Distance from X-Ray Source (pc)')
 #ax.invert_xaxis()
 plt.scatter(GalaxDists, vel, s=3)
 
-#distUnc = GalaxDists * 20 / (Sclusterdist.loc[Sclustername == "X187.0-Y122.0-N89"].iloc[0])
 
 z,cov = polyfit(GalaxDists, vel, 1, cov=True)     #this finds the linear fit for the data
 p = poly1d(z)
-gradUnc, intUnc = sqrt(diag(cov))
+gradUnc, intUnc = sqrt(diag(cov))       #this is the uncertainty in the fit
+#the following plots an uncertainty "area" for the trendline
+x = arange(min(GalaxDists), max(GalaxDists), 1000)
+upper = (z[0] + gradUnc) * x + (z[1] - intUnc)
+lower = (z[0] - gradUnc) * x + (z[1] + intUnc)
+plt.fill_between(x, lower, upper, color='r', alpha=0.2)
 
 plt.plot(GalaxDists,p(GalaxDists),"r--", linewidth=0.5)     #plot the trendline on top of the data
 plt.errorbar(GalaxDists, vel, xerr=distUnc, yerr=0.5, fmt=',', linewidth=0.5)
 
-text = f"$v_r=({z[0]:0.5f} \pm {round(gradUnc,5)})\;x+({z[1]:0.3f} \pm {round(intUnc, 2)})  $\n$R^2 = {r2_score(vel,p(GalaxDists)):0.3f}$"        #this defines the text to add onto the graph
-plt.gca().text(50000, -1000, text)      #chooses the location for the text on the graph
+print(f"v_r=({z[0]:0.5f} +/- {round(gradUnc,5)}) d + ({z[1]:0.3f} +/- {round(intUnc, 2)}) km/s \nR^2 = {r2_score(vel,p(GalaxDists)):0.3f}")        #this defines the text to add onto the graph
 ax.grid()
 ax.ticklabel_format(axis='x', style='sci', scilimits=(0,3), useMathText=True)       #scientific notation for the x-axis
 ax.set_ylim([-1200,0])
 figure(figsize=(20,15))             #units are inches
-fig.set_dpi(300)
+fig.set_dpi(400)
 
 fig.savefig(dir_path+'\\Velocity vs Distance for Galaxies.png')

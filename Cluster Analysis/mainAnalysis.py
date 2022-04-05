@@ -2,7 +2,7 @@
 """
 Created on Sun Mar 27 15:07:08 2022
 
-@author: ryanw
+@author: Ryan White     s4499039
 
 This program analyses nearby (and resolved) galaxies to produce a rough rotation curve for each. It also does some analysis on these galaxies to infer key relationships between
 galaxy properties (to mixed results). 
@@ -12,7 +12,7 @@ This program currently outputs a rotation curve for each nearby galaxy, as well 
 The algorithm to produce approximately equal area cells for a rectangle mapping of a sphere was adapted from:
 Malkin, Z, 2019. "A NEW EQUAL-AREA ISOLATITUDINAL GRID ON A SPHERICAL SURFACE", https://arxiv.org/pdf/1909.04701.pdf
 
-**Mass uncertainty was found to be negligible (16 orders of magnitude smaller than result), and so the code to calculate it was removed to save time in subsequent runs. 
+
 """
 
 from numpy import *
@@ -25,6 +25,8 @@ from matplotlib.pyplot import figure
 import matplotlib.patches as patches
 import matplotlib.colors as colours
 from sklearn.metrics import r2_score
+from scipy.optimize import curve_fit
+from array import *
 
 def inclination_correction(major, minor, emax, method):
     '''This function increases the rotation velocity of observed stars in galaxies depending on some inferred inclination. 
@@ -62,7 +64,7 @@ clusterMasses = []
 clusterRadii = []
 clusterMaxVel = []
 clusterGreenLumins = []
-radUnc = [];
+radUnc = []; massUnc = []; logMassUnc = []
 
 StarClusters = []
 #the following loop adds all clusternames to a list StarClusters
@@ -87,25 +89,36 @@ for cluster in StarClusters:
     
     starvels = abs(starvels * 1 / inclination_correction(major, minor, emax, "cos"))   #estimates the actual rotation velocity via an inclination correction
     
-    radius = []
+    radius = []; radiusUnc = [];
     #the following loop estimates the radial position that a star is from the center of the galaxy
     #the following assumes that *all* galaxies are approximately flat spirals. 
     for index, star in stardata.iterrows():
         radPosition = radial_distance(median(stardata['Equatorial']), median(stardata['Polar']), stardata['Equatorial'].loc[index], stardata['Polar'].loc[index])
         radius.append(radPosition)
+        radiusUnc.append(1/2 * radPosition * (2*sin(0.2 * pi/180)**2))
+    
     
     #the following finds the distance to the nearby galaxy
     distance = clusterdistances.loc[clusterdistances['ClusterName'] == cluster].iloc[0,1]
     distanceMetres = distance * 3.086 * 10**16
     
-    
-    
     clusterRadius = distanceMetres * sin(max(radius) * pi / 180) / 1000     #estimates galaxy radius from it's optical extent and the distance to it
-    radUnc.append(0.434 * (sin(0.2 * pi/180) * distance / (clusterRadius / (3.086 * 10**13))))
-    M = clusterRadius * max(starvels * 1000)**2 / (6.67 * 10**-11); clusterMasses.append(M)       #estimates TOTAL galaxy mass from the virial theorem
+    radiusUnc = 0.434 * (sin(0.2 * pi/180) * distance / (clusterRadius / (3.086 * 10**13)))
+    radUnc.append(radiusUnc)
+    M = clusterRadius * (max(starvels) * 1000)**2 / (6.67 * 10**-11); clusterMasses.append(M)       #estimates TOTAL galaxy mass from the virial theorem
     clusterRadii.append(clusterRadius / (3.086 * 10**13)); clusterMaxVel.append(max(starvels))     #add data to lists
     
-
+    #the following loop implements a monte carlo estimation of the galaxy's mass uncertainty
+    i=0
+    runs = 20
+    massUncDist = []
+    while i < runs:      
+        radius_jitter = clusterRadius + (radiusUnc * random.uniform(low=-1, high=1, size=len(StarClusters)))
+        vel_jitter = (max(starvels) * 1000) + ((max(starvels) * 1000) * 0.03 * random.uniform(low=-1, high=1, size=len(StarClusters)))
+        massUncDist.append(radius_jitter * vel_jitter**2 / (6.67 * 10**-11))
+        i += 1
+    massUnc.append(std(massUncDist))
+    logMassUnc.append(0.464 * std(massUncDist) / M)
     
     #the following finds galaxy luminosity by adding the luminosity of all of the stars
     GreenLumin = sum(stardata['GreenFlux']) * 4 * pi * distanceMetres**2; 
@@ -114,12 +127,15 @@ for cluster in StarClusters:
     #the following plots a rotation curve of the currently analysed galaxy
     radius = radius / max(radius)       #finds proportion of galactic radius that star is away from the center
     fig, ax = plt.subplots()
-    plt.scatter(radius, starvels, s=10, linewidth=0)
+    plt.scatter(radius, starvels, s=5, linewidth=0)
+    plt.errorbar(radius, starvels, xerr=radiusUnc, yerr=0.03, fmt=',', linewidth=0.7)
     ax.set_ylabel("Rotational Velocity (km/s)")
     ax.set_xlabel("Radius (prop. of Galactic Radius)")
     #ax.set_title(f'Rotation Curve of {cluster}')
     ax.grid(axis='both', which='major')
+    
     fig.savefig(dir_path+f'\\Rotation Curves\\{cluster}.png', dpi=200)
+    plt.close(fig)
     plt.clf()
     
     
@@ -132,6 +148,8 @@ for index, cluster in enumerate(clusterMasses):
         del clusterRadii[index]
         del clusterMaxVel[index]
         del radUnc[index]
+        del massUnc[index]
+        del logMassUnc[index]
 
 
 clusterCoords = []
@@ -217,10 +235,20 @@ fig.savefig(dir_path + '/Cluster Cell Count Histogram.png', dpi=200)
 
 #this plots luminosity vs galaxy mass
 fig, ax = plt.subplots()
-plt.scatter(log10(clusterMasses), log10(clusterGreenLumins), s=4)
+plt.scatter(log10(clusterMasses), log10(clusterGreenLumins), s=3)
 ax.set_ylabel("Log10 Galaxy V Band Luminosity (W)")
 ax.set_xlabel("Log10 Galaxy Mass (kg)")
-plt.errorbar(log10(clusterMasses), log10(clusterGreenLumins), yerr=0.03, fmt=',', linewidth=0.5)
+# x = arange(min(log10(clusterMasses)), max(log10(clusterMasses)), 0.1)
+# z,cov = polyfit(log10(clusterMasses), log10(clusterGreenLumins), 1, cov=True)     #this finds the linear fit for the data
+# p = poly1d(z)
+# gradUnc, intUnc = sqrt(diag(cov))
+# upper = (z[0] + gradUnc) * x + (z[1] - intUnc)
+# lower = (z[0] - gradUnc) * x + (z[1] + intUnc)
+# plt.plot(log10(clusterMasses),p(log10(clusterMasses)),"r--", linewidth=0.5)
+# plt.fill_between(x, lower, upper, color='r', alpha=0.2)
+
+# print(f"log10(L_G)=({z[0]:0.5f} \pm {round(gradUnc,5)}) M + ({z[1]:0.3f} \pm {round(intUnc, 2)}) km/s \nR^2 = {r2_score(log10(clusterGreenLumins),p(log10(clusterMasses))):0.3f}")
+plt.errorbar(log10(clusterMasses), log10(clusterGreenLumins), xerr=logMassUnc, yerr=0.03, fmt=',', linewidth=0.5)
 #ax.set_title("Galaxy Luminosity vs Mass")
 
 fig.savefig(dir_path + '/Lumin-vs-Mass.png', dpi=200)
@@ -232,7 +260,7 @@ fig, ax = plt.subplots()
 colour = log(galaxData['RedFlux'] / galaxData['BlueFlux'])
 plt.scatter(log10(galaxData['Distance']), colour, s=0.1)
 ax.set_ylabel("Galaxy Colour ($M_B - M_R$)")
-ax.set_xlabel("Galaxy Distance (pc)")
+ax.set_xlabel("Log10 Galaxy Distance (pc)")
 #ax.set_title("Galaxy Colour vs Distance")
 
 fig.savefig(dir_path + '/Colour-vs-Distance.png', dpi=200)
@@ -241,13 +269,22 @@ plt.clf()
 
 #this plots the galaxy radii vs the mass
 fig, ax = plt.subplots()
-plt.scatter(log10(clusterMasses), log10(clusterRadii), s=4)
+plt.scatter(log10(clusterMasses), log10(clusterRadii), s=3)
 ax.set_ylabel("Log10 Galaxy Radius (pc)")
 ax.set_xlabel("Log10 Galaxy Mass (kg)")
-    
-plt.errorbar(log10(clusterMasses), log10(clusterRadii), yerr=radUnc, fmt=',', linewidth=0.5)
-#ax.set_title("Galaxy Radius vs Mass")
+# x = arange(min(log10(clusterMasses)), max(log10(clusterMasses)), 0.1)
+# z,cov = polyfit(log10(clusterMasses), log10(clusterRadii), 1, cov=True)     #this finds the linear fit for the data
+# p = poly1d(z)
+# gradUnc, intUnc = sqrt(diag(cov))
+# upper = (z[0] + gradUnc) * x + (z[1] - intUnc)
+# lower = (z[0] - gradUnc) * x + (z[1] + intUnc)
+# plt.plot(log10(clusterMasses),p(log10(clusterMasses)),"r--", linewidth=0.5)
+# plt.fill_between(x, lower, upper, color='r', alpha=0.2)
 
+# print(f"log10(R)=({z[0]:0.5f} \pm {round(gradUnc,5)}) M + ({z[1]:0.3f} \pm {round(intUnc, 2)}) km/s \nR^2 = {r2_score(log10(clusterRadii),p(log10(clusterMasses))):0.3f}")
+    
+plt.errorbar(log10(clusterMasses), log10(clusterRadii), xerr=logMassUnc, yerr=radUnc, fmt=',', linewidth=0.5)
+#ax.set_title("Galaxy Radius vs Mass")
 
 fig.savefig(dir_path + '/Radius vs Mass.png', dpi=300)
     
@@ -258,12 +295,22 @@ fig, ax = plt.subplots()
 plt.scatter(log10(clusterMasses), log10(clusterMaxVel), s=4)
 ax.set_ylabel("Log10 Galaxy Rot Velocity (km/s)")
 ax.set_xlabel("Log10 Galaxy Mass (kg)")
+
+x = arange(min(log10(clusterMasses)), max(log10(clusterMasses)), 0.1)
+z,cov = polyfit(log10(clusterMasses), log10(clusterMaxVel), 1, cov=True)     #this finds the linear fit for the data
+p = poly1d(z)
+gradUnc, intUnc = sqrt(diag(cov))
+upper = (z[0] + gradUnc) * x + (z[1] - intUnc)
+lower = (z[0] - gradUnc) * x + (z[1] + intUnc)
+plt.plot(log10(clusterMasses),p(log10(clusterMasses)),"r--", linewidth=0.5)
+plt.fill_between(x, lower, upper, color='r', alpha=0.2)
+
+print(f"v_r=({z[0]:0.5f} \pm {round(gradUnc,5)}) M + ({z[1]:0.3f} \pm {round(intUnc, 2)}) km/s \nR^2 = {r2_score(log10(clusterMaxVel),p(log10(clusterMasses))):0.3f}")
 MassVelError = []
 for vel in clusterMaxVel:
     MassVelError.append(0.1 / vel)
-plt.errorbar(log10(clusterMasses), log10(clusterMaxVel), yerr=MassVelError, fmt=',', linewidth=0.5)
+plt.errorbar(log10(clusterMasses), log10(clusterMaxVel), xerr=logMassUnc, yerr=MassVelError, fmt=',', linewidth=0.5)
 #ax.set_title("Galaxy Rot Velocity vs Mass")
-
 fig.savefig(dir_path + '/Rot Velocity vs Mass.png', dpi=300)
 
 plt.clf()
