@@ -13,6 +13,8 @@ import os
 __author__ = "Ciaran Komarakul-Greene, s4528583"
 
 PARALLAX_LIMIT = 0.01
+UNCERTAINTY_LOWER = 0.78
+UNCERTAINTY_UPPER = 1.29
 
 def fluxToApp(flux):
     return -np.log(flux)
@@ -87,8 +89,12 @@ def plotBaseline(colour='b'):
 
     return fig, ax
 
+def main():
+    print("This code doesn't do anything by itself, why are you running it")
+    # haha I am funny please laugh
+
 if __name__ == "__main__":
     # put code that you want to run from this file here
     warnings.filterwarnings('ignore')
 
-    pass
+    main()

@@ -27,16 +27,18 @@ starClusters = pd.read_csv(dir_path + '/clusterDistances.csv')
 # build up list of clusters that are not in the csv already
 newClusters = []
 for clusterFilename in os.listdir(cluster_dir):
-    clusterName = clusterFilename[0:-4] # remove ".txt" extension
+    clusterName = clusterFilename.strip('.txt')
     if not clusterName in list(starClusters['ClusterName']):
         newClusters.append(clusterName)
 
 # if there are new clusters, append to csv file with a rudimentary guess
 # at distance; I will match top to top from baseline below
 dir_path = os.path.dirname(os.path.realpath(__file__))
+# load all stars
 calStars = pd.read_csv(dir_path + '/../Data/Camera Images/calibrated star data.txt',
     delimiter=' ')
-filtStars = calStars.loc[calStars['Parallax'] > HR.PARALLAX_LIMIT]
+# filter stars according to parallax
+filtStars = calStars.loc[calStars['Parallax'] > HR.PARALLAX_LIMIT] 
 filtStarGreen = np.array(filtStars['GreenFlux']) # green flux
 filtStarDists = np.array(filtStars['Distance']) # distances
 baseline_minMG = min(HR.appToAbs(HR.fluxToApp(filtStarGreen), filtStarDists))
@@ -44,7 +46,8 @@ baseline_minMG = min(HR.appToAbs(HR.fluxToApp(filtStarGreen), filtStarDists))
 # here we append dataframe with list of all new clusters
 if newClusters != []:
     newClusters_df = pd.DataFrame(zip(newClusters, np.ones(len(newClusters))), 
-        columns=['ClusterName', 'Distances']) # create dataframe to concatenate
+        # create dataframe to concatenate
+        columns=['ClusterName', 'Distances', 'Distance Lower Bound', 'Distance Upper Bound']) 
     starClusters = pd.concat((starClusters, newClusters_df), ignore_index=True)
 
 # for each star cluster, plot HR diagram, then save in folder
@@ -56,20 +59,22 @@ for clusterName in list(starClusters['ClusterName']):
     clusterGre = np.array(clusterData['GreenFlux'])
     clusterPer = np.array(clusterData['Periodicity'])
 
-    # here we implement rudimentary estimate
+    # here we implement rudimentary estimate 
     if clusterName in newClusters:
         # get cluster max M_green
         cluster_minMG = min(HR.fluxToApp(clusterGre))
-        # compare with baseline min and change to distance
+        # compare with baseline min and change to distance estimate
         clusterDist = HR.distModToDist(cluster_minMG - baseline_minMG)
         # save to dataframe
-        starClusters.loc[starClusters['ClusterName'] == clusterName] = [clusterName, clusterDist]
+        # from HR.ipynb, we have relative uncertainty estimates; constants given in HR.py
+        starClusters.loc[starClusters['ClusterName'] == clusterName] = \
+            [clusterName, clusterDist, HR.UNCERTAINTY_LOWER*clusterDist, HR.UNCERTAINTY_UPPER*clusterDist]
     else:
-        # distance already exists
+        # distance already exists, grab distance
         clusterDist = starClusters.loc[starClusters['ClusterName'] == clusterName].iloc[0,1]
 
     fig, ax = HR.plotBaseline()
-    # compute apparent magnitudes, unpack as arguemnts, then plot on same figure
+    # compute apparent magnitudes, unpack as arguments, then plot on same figure
     HR.plotHR(*list(map(lambda x: HR.appToAbs(HR.fluxToApp(x), clusterDist),
                 [clusterRed, clusterGre, clusterBlu])), clusterPer, ax,col='red',
                 lab=clusterName, scale=10)
