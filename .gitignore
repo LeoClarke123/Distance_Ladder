@@ -302,3 +302,4 @@ TSWLatexianTemp*
 
 # Ciaran: need to add some lines so I don't commit like 500 auxiliary things every time.
 .history
+__pycache__

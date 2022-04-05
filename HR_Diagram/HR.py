@@ -91,7 +91,7 @@ def plotBaseline(colour='b'):
 
 def main():
     print("This code doesn't do anything by itself, why are you running it")
-    # haha I am funny please laugh
+    # I am funny please laugh
 
 if __name__ == "__main__":
     # put code that you want to run from this file here

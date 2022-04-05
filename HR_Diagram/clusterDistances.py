@@ -1,5 +1,5 @@
 """
-Code to apply previously written HR.py to star cluster data.
+Script to apply previously written HR.py to star cluster data.
 We will read star clusters from directory, then write to csv.
     If star not already in csv, then set distance to 1.
 Read off csv distance and plot against baseline.
@@ -8,11 +8,13 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import os 
+import logging
 
 import HR as HR
 
-__author__ = "Ciaran Komarakul-Greene, s4528583"
+__author__ = "Ciaran Komarakul-Greene"
 
+logging.basicConfig(level=logging.INFO)
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 # get list of all clusters
@@ -88,4 +90,4 @@ for clusterName in list(starClusters['ClusterName']):
 # save new copy of starClusters for future reference
 starClusters.to_csv(dir_path + '/clusterDistances.csv',index=False)
 
-print('done')
+logging.info('done')
