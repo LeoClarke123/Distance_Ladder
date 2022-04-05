@@ -37,6 +37,7 @@ import pandas as pd
 dir_path = os.path.dirname(os.path.realpath(__file__))  #finds the path of this program to use later
 totalpoints = open(dir_path+"/total point-like data.txt", "r")       #opens and reads existing data. 
 totalfuzzy = open(dir_path+"/total fuzzy data.txt", "r")
+Pstardata = pd.read_csv(dir_path+"/total point-like data.txt", delimiter=' ')
 
 clusters = pd.read_csv(dir_path+'/star clusters.txt', delimiter=' ')
 cluster_xlocs = clusters['x']
@@ -137,15 +138,31 @@ for (scale,lwidth,name,DPI,analysis) in [(5,0,'-pretty',400,0), (0.4,0,'-analysi
     cbar.set_label('Radial Velocity (km/s)', rotation=90)
     fig.savefig(dir_path+f'\\star-redshift{name}.png', dpi=DPI)
 
-
 totalpoints.close()
 plt.clf()           #clears the current figure in order to create the next one
+
+fig, ax = plt.subplots(figsize=(12,6))  #units are inches
+radialvelocitycutoff = 2
+parallaxcutoff = 0.01
+calStarEquats = Pstardata.loc[(Pstardata['Parallax'] > parallaxcutoff) & (abs(Pstardata["RadialVelocity"]) < radialvelocitycutoff)].iloc[:, 1]
+calStarPolar = Pstardata.loc[(Pstardata['Parallax'] > parallaxcutoff) & (abs(Pstardata["RadialVelocity"]) < radialvelocitycutoff)].iloc[:, 2]
+plt.scatter(calStarEquats, calStarPolar, s=2, color='w')
+print(len(calStarEquats))
+
+ax.set_xlabel('Equatorial Angle (deg)')
+ax.set_ylabel('Polar Angle (deg)')
+ax.set_facecolor('k')
+ax.invert_yaxis() 
+
+fig.savefig(dir_path+'\\our-galaxy.png', dpi=300)
+
+plt.clf()
 
 minvel = 0
 maxvel = 0
 
 for row in fuzzydata:       #functionally identical to the star loop
-    [name, equat, polar, bluef, greenf, redf, size, veloc, location] = row.split()
+    [name, equat, polar, bluef, greenf, redf, size, veloc, dist, location] = row.split()
     bluef, greenf, redf, veloc = float(bluef), float(greenf), float(redf), float(veloc)
     rgb = [bluef, greenf, redf]
     aveflux = average(rgb)

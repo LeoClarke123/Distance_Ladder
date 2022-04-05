@@ -24,6 +24,7 @@ import matplotlib.pyplot as plt
 from matplotlib.pyplot import figure
 import matplotlib.patches as patches
 import matplotlib.colors as colours
+from sklearn.metrics import r2_score
 
 def inclination_correction(major, minor, emax, method):
     '''This function increases the rotation velocity of observed stars in galaxies depending on some inferred inclination. 
@@ -100,9 +101,9 @@ for cluster in StarClusters:
     
     
     clusterRadius = distanceMetres * sin(max(radius) * pi / 180) / 1000     #estimates galaxy radius from it's optical extent and the distance to it
-    radUnc.append(0.434 * sin(0.2 * pi/180) * distanceMetres / (clusterRadius * 1000))
+    radUnc.append(0.434 * (sin(0.2 * pi/180) * distance / (clusterRadius / (3.086 * 10**13))))
     M = clusterRadius * max(starvels * 1000)**2 / (6.67 * 10**-11); clusterMasses.append(M)       #estimates TOTAL galaxy mass from the virial theorem
-    clusterRadii.append(clusterRadius); clusterMaxVel.append(max(starvels))     #add data to lists
+    clusterRadii.append(clusterRadius / (3.086 * 10**13)); clusterMaxVel.append(max(starvels))     #add data to lists
     
 
     
@@ -241,13 +242,14 @@ plt.clf()
 #this plots the galaxy radii vs the mass
 fig, ax = plt.subplots()
 plt.scatter(log10(clusterMasses), log10(clusterRadii), s=4)
-ax.set_ylabel("Log10 Galaxy Radius (km)")
+ax.set_ylabel("Log10 Galaxy Radius (pc)")
 ax.set_xlabel("Log10 Galaxy Mass (kg)")
     
 plt.errorbar(log10(clusterMasses), log10(clusterRadii), yerr=radUnc, fmt=',', linewidth=0.5)
 #ax.set_title("Galaxy Radius vs Mass")
 
-fig.savefig(dir_path + '/Radius vs Mass.png', dpi=200)
+
+fig.savefig(dir_path + '/Radius vs Mass.png', dpi=300)
     
 plt.clf()
 
@@ -262,7 +264,7 @@ for vel in clusterMaxVel:
 plt.errorbar(log10(clusterMasses), log10(clusterMaxVel), yerr=MassVelError, fmt=',', linewidth=0.5)
 #ax.set_title("Galaxy Rot Velocity vs Mass")
 
-fig.savefig(dir_path + '/Rot Velocity vs Mass.png', dpi=200)
+fig.savefig(dir_path + '/Rot Velocity vs Mass.png', dpi=300)
 
 plt.clf()
 
