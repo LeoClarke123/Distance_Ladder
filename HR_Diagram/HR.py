@@ -61,7 +61,7 @@ def plotHR(MRs, MGs, MBs, MPs, ax: plt.Axes, col=None, lab='Cluster ', scale=1):
 def plotBaseline(colour='b'):
     """
     c.f. baselineHR.ipynb for explanation, this is here
-        for convenience in later plotting
+        for convenience in later plots
     """
     dir_path = os.path.dirname(os.path.realpath(__file__))
     calStars = pd.read_csv(dir_path + '/../Data/Camera Images/calibrated star data.txt',

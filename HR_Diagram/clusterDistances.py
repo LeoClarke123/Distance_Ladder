@@ -3,6 +3,8 @@ Script to apply previously written HR.py to star cluster data.
 We will read star clusters from directory, then write to csv.
     If star not already in csv, then set distance to 1.
 Read off csv distance and plot against baseline.
+At the moment, if you need to adjust the distances you'll need to 
+    adjust the uncertainties manually as well.
 """
 import numpy as np
 import pandas as pd
@@ -74,6 +76,7 @@ for clusterName in list(starClusters['ClusterName']):
     else:
         # distance already exists, grab distance
         clusterDist = starClusters.loc[starClusters['ClusterName'] == clusterName].iloc[0,1]
+    # TODO If cluster dist exists but not uncertainties, need to process.
 
     fig, ax = HR.plotBaseline()
     # compute apparent magnitudes, unpack as arguments, then plot on same figure
