@@ -142,8 +142,8 @@ for i in ["Back", "Down", "Front", "Left", "Right", "Up"]:      #each of the six
                             power = LS.power(freqs)     #calculates LS power
                             period = 1 / freqs[argmax(power)]       #finds most likely period from the frequency associated with maximum power
                             
-                            period_unc = period_uncert(time, flux, runs = 10,  yerr = 0.015)    #finds the uncertainty in period from monte carlo sim developed by Leo Clarke
-                    
+                            period_unc = period_uncert(time, flux, runs = 20,  yerr = 0.015)    #finds the uncertainty in period from monte carlo sim developed by Leo Clarke
+                            print("done")
                     #following computes the coordinate transform as before
                     [equat, polar] = coord_transform(i, xpos, ypos)
                         
