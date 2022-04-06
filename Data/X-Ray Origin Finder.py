@@ -114,7 +114,7 @@ upper = (z[0] + gradUnc) * x + (z[1] - intUnc)
 lower = (z[0] - gradUnc) * x + (z[1] + intUnc)
 plt.fill_between(x, lower, upper, color='r', alpha=0.2)
 
-plt.plot(GalaxDists,p(GalaxDists),"r--", linewidth=0.5)     #plot the trendline on top of the data
+plt.plot(x,p(x),"r--", linewidth=0.5)     #plot the trendline on top of the data
 plt.errorbar(GalaxDists, vel, xerr=distUnc, yerr=0.5, fmt=',', linewidth=0.5)
 
 print(f"v_r=({z[0]:0.5f} +/- {round(gradUnc,5)}) d + ({z[1]:0.3f} +/- {round(intUnc, 2)}) km/s \nR^2 = {r2_score(vel,p(GalaxDists)):0.3f}")        #this defines the text to add onto the graph

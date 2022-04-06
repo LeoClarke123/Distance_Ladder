@@ -65,6 +65,7 @@ clusterRadii = []
 clusterMaxVel = []
 clusterGreenLumins = []
 radUnc = []; massUnc = []; logMassUnc = []
+allTrends = []
 
 StarClusters = []
 #the following loop adds all clusternames to a list StarClusters
@@ -129,15 +130,53 @@ for cluster in StarClusters:
     fig, ax = plt.subplots()
     plt.scatter(radius, starvels, s=5, linewidth=0)
     plt.errorbar(radius, starvels, xerr=radiusUnc, yerr=0.03, fmt=',', linewidth=0.7)
-    ax.set_ylabel("Rotational Velocity (km/s)")
+    ax.set_ylabel("Rotational Velocity (km s$^{-1}$)")
     ax.set_xlabel("Radius (prop. of Galactic Radius)")
     #ax.set_title(f'Rotation Curve of {cluster}')
     ax.grid(axis='both', which='major')
+    
+    #the below few loops finds the "top" of the rotation curve, since that most accurately represents the *actual* rotation curve
+    indRadVel = []
+    for index, velocity in enumerate(starvels):
+        indRadVel.append([index, radius[index], velocity])
+    SortedRadVels = sorted(indRadVel, key=lambda x: x[1])
+    trendRads = []; trendVels = []
+    for index, value in enumerate(SortedRadVels):
+        ind, rad, vel = value
+        if index == 0:
+            trendRads.append(rad)
+            trendVels.append(vel)
+        elif vel > max(trendVels):
+            trendRads.append(rad)
+            trendVels.append(vel)
+    
+    #the below attempts to plot a trendline of the rotation curve
+    x = arange(min(radius), max(radius), 0.01)      #x bounds for the trendline
+    z,cov = polyfit(log10(trendRads), trendVels, 1, cov=True)     #this finds the logarithmic fit for the data
+    p = poly1d(z)
+    gradUnc, intUnc = sqrt(diag(cov))
+    upper = (z[0] + gradUnc) * log10(x) + (z[1] - intUnc)
+    lower = (z[0] - gradUnc) * log10(x) + (z[1] + intUnc)
+    plt.plot(x, p(log10(x)),"r--", linewidth=0.5)
+    plt.fill_between(x, lower, upper, color='r', alpha=0.2)
+    plt.ylim([0, (1.1) * max(starvels)])
+    
+    allTrends.append(p / p(max(x)))
     
     fig.savefig(dir_path+f'\\Rotation Curves\\{cluster}.png', dpi=200)
     plt.close(fig)
     plt.clf()
     
+x = arange(0.01, 1.01, 0.01)
+fig, ax = plt.subplots()
+for trendline in allTrends:
+    plt.plot(x, trendline(log10(x)), linewidth=0.5)
+ax.set_ylabel("Rotational Velocity (prop. of v$_{max}$)")
+ax.set_xlabel("Radius (prop. of Galactic Radius)")
+plt.ylim([0, 0.8])
+fig.savefig(dir_path+'\\Rotation Curves\\ALLCurves.png', dpi=300)
+
+plt.clf()
     
 
 #the following removes severe outliers from the data
@@ -236,8 +275,8 @@ fig.savefig(dir_path + '/Cluster Cell Count Histogram.png', dpi=200)
 #this plots luminosity vs galaxy mass
 fig, ax = plt.subplots()
 plt.scatter(log10(clusterMasses), log10(clusterGreenLumins), s=3)
-ax.set_ylabel("Log10 Galaxy V Band Luminosity (W)")
-ax.set_xlabel("Log10 Galaxy Mass (kg)")
+ax.set_ylabel("log$_{10}$ Galaxy V Band Luminosity (W m$^{-2}$ nm$^{-1}$)")
+ax.set_xlabel("log$_{10}$ Galaxy Mass (kg)")
 # x = arange(min(log10(clusterMasses)), max(log10(clusterMasses)), 0.1)
 # z,cov = polyfit(log10(clusterMasses), log10(clusterGreenLumins), 1, cov=True)     #this finds the linear fit for the data
 # p = poly1d(z)
@@ -260,7 +299,7 @@ fig, ax = plt.subplots()
 colour = log(galaxData['RedFlux'] / galaxData['BlueFlux'])
 plt.scatter(log10(galaxData['Distance']), colour, s=0.1)
 ax.set_ylabel("Galaxy Colour ($M_B - M_R$)")
-ax.set_xlabel("Log10 Galaxy Distance (pc)")
+ax.set_xlabel("Log$_{10}$ Galaxy Distance (pc)")
 #ax.set_title("Galaxy Colour vs Distance")
 
 fig.savefig(dir_path + '/Colour-vs-Distance.png', dpi=200)
@@ -270,8 +309,8 @@ plt.clf()
 #this plots the galaxy radii vs the mass
 fig, ax = plt.subplots()
 plt.scatter(log10(clusterMasses), log10(clusterRadii), s=3)
-ax.set_ylabel("Log10 Galaxy Radius (pc)")
-ax.set_xlabel("Log10 Galaxy Mass (kg)")
+ax.set_ylabel("log$_{10}$ Galaxy Radius (pc)")
+ax.set_xlabel("log$_{10}$ Galaxy Mass (kg)")
 # x = arange(min(log10(clusterMasses)), max(log10(clusterMasses)), 0.1)
 # z,cov = polyfit(log10(clusterMasses), log10(clusterRadii), 1, cov=True)     #this finds the linear fit for the data
 # p = poly1d(z)
@@ -293,8 +332,8 @@ plt.clf()
 #this plots the cluster rotational velocity vs mass
 fig, ax = plt.subplots()
 plt.scatter(log10(clusterMasses), log10(clusterMaxVel), s=4)
-ax.set_ylabel("Log10 Galaxy Rot Velocity (km/s)")
-ax.set_xlabel("Log10 Galaxy Mass (kg)")
+ax.set_ylabel("log$_{10}$ Galaxy Rot Velocity (km s$^{-1}$)")
+ax.set_xlabel("log$_{10}$ Galaxy Mass (kg)")
 
 x = arange(min(log10(clusterMasses)), max(log10(clusterMasses)), 0.1)
 z,cov = polyfit(log10(clusterMasses), log10(clusterMaxVel), 1, cov=True)     #this finds the linear fit for the data
@@ -302,7 +341,7 @@ p = poly1d(z)
 gradUnc, intUnc = sqrt(diag(cov))
 upper = (z[0] + gradUnc) * x + (z[1] - intUnc)
 lower = (z[0] - gradUnc) * x + (z[1] + intUnc)
-plt.plot(log10(clusterMasses),p(log10(clusterMasses)),"r--", linewidth=0.5)
+plt.plot(x, p(x),"r--", linewidth=0.5)
 plt.fill_between(x, lower, upper, color='r', alpha=0.2)
 
 print(f"v_r=({z[0]:0.5f} \pm {round(gradUnc,5)}) M + ({z[1]:0.3f} \pm {round(intUnc, 2)}) km/s \nR^2 = {r2_score(log10(clusterMaxVel),p(log10(clusterMasses))):0.3f}")
@@ -318,8 +357,8 @@ plt.clf()
 #this plots the size of a galaxy vs its distance
 fig, ax = plt.subplots()
 plt.scatter(log10((galaxData['RadialVelocity'] - 1.643) / -0.00263), log10(((galaxData['RadialVelocity'] - 1.643) / -0.00263) * tan(galaxData['Size'])), s=0.1)
-ax.set_ylabel("Log10 Galaxy Size (pc)")
-ax.set_xlabel("Log10 Galaxy Distance (pc)")
+ax.set_ylabel("log$_{10}$ Galaxy Size (pc)")
+ax.set_xlabel("log$_{10}$ Galaxy Distance (pc)")
 #ax.set_title("Galaxy Size vs Distance")
 
 fig.savefig(dir_path + '/Size vs Distance.png', dpi=200)
