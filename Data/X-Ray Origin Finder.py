@@ -124,6 +124,7 @@ ax.set_ylim([-1200,0])
 figure(figsize=(20,15))             #units are inches
 
 fig.savefig(dir_path+'\\Velocity vs Distance for Galaxies.png', dpi=400, bbox_inches='tight', pad_inches = 0.01)
+fig.savefig(dir_path+'\\Velocity vs Distance for Galaxies.pdf', dpi=400, bbox_inches='tight', pad_inches = 0.01)
 plt.close(fig)
 
 HubbleTime = round(abs(1/z[0]) * 3.086 * 10**13 / (60*60*24*365) / 10**6, 2)        #est age of universe (in Mill Years, found from t = 1/H0)

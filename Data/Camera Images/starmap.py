@@ -103,6 +103,7 @@ starmap = plt.scatter(starequats, starpolar, s=starbright, c=starcolours, marker
 
 figure(figsize=(36,18))             #units are inches
 fig.savefig(dir_path+'\\starmap.png', dpi=400, bbox_inches='tight', pad_inches = 0.01)
+fig.savefig(dir_path+'\\starmap.pdf', dpi=400, bbox_inches='tight', pad_inches = 0.01)
 
 plt.clf()
 
@@ -136,6 +137,7 @@ for (scale,lwidth,name,DPI,analysis) in [(5,0,'-pretty',400,0), (0.4,0,'-analysi
     cbar = plt.colorbar(red)
     cbar.set_label('Radial Velocity (km/s)', rotation=90)
     fig.savefig(dir_path+f'\\star-redshift{name}.png', dpi=DPI, bbox_inches='tight', pad_inches = 0.01)
+    fig.savefig(dir_path+f'\\star-redshift{name}.pdf', dpi=DPI, bbox_inches='tight', pad_inches = 0.01)
 
 totalpoints.close()
 plt.clf()           #clears the current figure in order to create the next one
@@ -154,6 +156,7 @@ ax.set_facecolor('k')
 ax.invert_yaxis() 
 
 fig.savefig(dir_path+'\\our-galaxy.png', dpi=300, bbox_inches='tight', pad_inches = 0.01)
+fig.savefig(dir_path+'\\our-galaxy.pdf', dpi=300, bbox_inches='tight', pad_inches = 0.01)
 
 plt.clf()
 
@@ -196,6 +199,7 @@ plt.scatter(fuzequats, fuzpolar, s=fuzbright, c=fuzcolours, marker='.', linewidt
 
 figure(figsize=(36,18))             #units are inches
 fig.savefig(dir_path+'\\fuzzymap.png', dpi=600, bbox_inches='tight', pad_inches = 0.01)
+fig.savefig(dir_path+'\\fuzzymap.pdf', dpi=600, bbox_inches='tight', pad_inches = 0.01)
 
 plt.clf()
 
@@ -214,5 +218,6 @@ plt.show()
 
 figure(figsize=(60,18))             #units are inches
 fig.savefig(dir_path+'\\fuzzy-redshift.png', dpi=600, bbox_inches='tight', pad_inches = 0.01)
+fig.savefig(dir_path+'\\fuzzy-redshift.pdf', dpi=600, bbox_inches='tight', pad_inches = 0.01)
 
 totalfuzzy.close()

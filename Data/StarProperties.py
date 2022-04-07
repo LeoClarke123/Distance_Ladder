@@ -52,7 +52,8 @@ fig, ax = plt.subplots()
 plt.hist(temps, bins=80)
 ax.set_xlabel("Star Temperature (K)")
 ax.set_ylabel("Number of Nearby Stars")
-fig.savefig(dir_path+'\\AllStarTemps', dpi=400, bbox_inches='tight', pad_inches = 0.01)
+fig.savefig(dir_path+'\\AllStarTemps.png', dpi=400, bbox_inches='tight', pad_inches = 0.01)
+fig.savefig(dir_path+'\\AllStarTemps.pdf', dpi=400, bbox_inches='tight', pad_inches = 0.01)
 plt.close(fig)
 
 
@@ -72,6 +73,7 @@ ax2.plot(base[:-1], cumulative / max(cumulative), c='r')
 plt.ylim([0,1.05])
 ax2.set_ylabel("Cumulative Distribution of Star Temp", c='maroon')
 
-fig.savefig(dir_path+'\\MainSeqStarTemps', dpi=400, bbox_inches='tight', pad_inches = 0.01)
+fig.savefig(dir_path+'\\MainSeqStarTemps.png', dpi=400, bbox_inches='tight', pad_inches = 0.01)
+fig.savefig(dir_path+'\\MainSeqStarTemps.pdf', dpi=400, bbox_inches='tight', pad_inches = 0.01)
 plt.close(fig)
 
