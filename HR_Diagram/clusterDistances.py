@@ -88,12 +88,12 @@ for clusterName in list(starClusters['ClusterName']):
     ax.grid()
     # first we save a copy without title
     fig.savefig(dir_path + f'/HRDiagramsSansTitles/HR_{clusterName}.png', dpi=DPI_SCALE*100,\
-        bbox_inches='tight', pad_inches = 0)
+        bbox_inches='tight', pad_inches = 0.01)
 
     # now we save a copy with title
     ax.set_title(f'Cluster {clusterName} HR Diagram, distance = {clusterDist:.1f} pc')
     fig.savefig(dir_path + f'/HRDiagramsWithTitles/HR_{clusterName}.png', dpi=DPI_SCALE*100,\
-        bbox_inches='tight', pad_inches = 0)
+        bbox_inches='tight', pad_inches = 0.01)
     
     plt.close(fig)
 
@@ -104,6 +104,6 @@ starClusters.to_csv(dir_path + '/clusterDistances.csv',index=False)
 fig, ax = HR.plotBaseline()
 ax.legend()
 fig.savefig(dir_path + "/BaselineHRDiagram.png", dpi=DPI_SCALE*100,\
-    bbox_inches='tight', pad_inches = 0)
+    bbox_inches='tight', pad_inches = 0.01)
 
 logging.info('done')

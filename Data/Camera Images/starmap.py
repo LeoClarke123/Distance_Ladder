@@ -102,7 +102,7 @@ ax.invert_yaxis()        #flips the y-axis so that polar angle is 0 at due north
 starmap = plt.scatter(starequats, starpolar, s=starbright, c=starcolours, marker='.', linewidths=0)
 
 figure(figsize=(36,18))             #units are inches
-fig.savefig(dir_path+'\\starmap.png', dpi=400, bbox_inches='tight', pad_inches = 0)
+fig.savefig(dir_path+'\\starmap.png', dpi=400, bbox_inches='tight', pad_inches = 0.01)
 
 plt.clf()
 
@@ -135,7 +135,7 @@ for (scale,lwidth,name,DPI,analysis) in [(5,0,'-pretty',400,0), (0.4,0,'-analysi
     red = plt.scatter(starequats, starpolar, s=scale, c=starredshift, vmin=minvel, vmax=maxvel, cmap=cm , marker='.', linewidths=lwidth)  #note the colourmap for the redshift amount
     cbar = plt.colorbar(red)
     cbar.set_label('Radial Velocity (km/s)', rotation=90)
-    fig.savefig(dir_path+f'\\star-redshift{name}.png', dpi=DPI, bbox_inches='tight', pad_inches = 0)
+    fig.savefig(dir_path+f'\\star-redshift{name}.png', dpi=DPI, bbox_inches='tight', pad_inches = 0.01)
 
 totalpoints.close()
 plt.clf()           #clears the current figure in order to create the next one
@@ -153,7 +153,7 @@ ax.set_ylabel('Polar Angle (deg)')
 ax.set_facecolor('k')
 ax.invert_yaxis() 
 
-fig.savefig(dir_path+'\\our-galaxy.png', dpi=300, bbox_inches='tight', pad_inches = 0)
+fig.savefig(dir_path+'\\our-galaxy.png', dpi=300, bbox_inches='tight', pad_inches = 0.01)
 
 plt.clf()
 
@@ -195,7 +195,7 @@ ax.invert_yaxis()
 plt.scatter(fuzequats, fuzpolar, s=fuzbright, c=fuzcolours, marker='.', linewidths=0)
 
 figure(figsize=(36,18))             #units are inches
-fig.savefig(dir_path+'\\fuzzymap.png', dpi=600, bbox_inches='tight', pad_inches = 0)
+fig.savefig(dir_path+'\\fuzzymap.png', dpi=600, bbox_inches='tight', pad_inches = 0.01)
 
 plt.clf()
 
@@ -213,6 +213,6 @@ cbar.set_label('Radial Velocity (km/s)', rotation=90)
 plt.show()
 
 figure(figsize=(60,18))             #units are inches
-fig.savefig(dir_path+'\\fuzzy-redshift.png', dpi=600, bbox_inches='tight', pad_inches = 0)
+fig.savefig(dir_path+'\\fuzzy-redshift.png', dpi=600, bbox_inches='tight', pad_inches = 0.01)
 
 totalfuzzy.close()

@@ -162,7 +162,7 @@ for cluster in StarClusters:
     
     allTrends.append(p / p(max(x)))
     
-    fig.savefig(dir_path+f'\\Rotation Curves\\{cluster}.png', dpi=200, bbox_inches='tight', pad_inches = 0)
+    fig.savefig(dir_path+f'\\Rotation Curves\\{cluster}.png', dpi=200, bbox_inches='tight', pad_inches = 0.01)
     plt.close(fig)
     plt.clf()
     
@@ -173,7 +173,7 @@ for trendline in allTrends:
 ax.set_ylabel("Rotational Velocity (prop. of v$_{max}$)")
 ax.set_xlabel("Radius (prop. of Galactic Radius)")
 plt.ylim([0, 0.8])
-fig.savefig(dir_path+'\\Rotation Curves\\ALLCurves.png', dpi=300, bbox_inches='tight', pad_inches = 0)
+fig.savefig(dir_path+'\\Rotation Curves\\ALLCurves.png', dpi=300, bbox_inches='tight', pad_inches = 0.01)
 
 plt.clf()
     
@@ -259,7 +259,7 @@ sm.set_array([])
 cbar = plt.colorbar(sm)
 cbar.set_label('Cluster Population in Cell', rotation=90)
 
-fig.savefig(dir_path + '/Isotropy.png', dpi=200, bbox_inches='tight', pad_inches = 0)    
+fig.savefig(dir_path + '/Isotropy.png', dpi=200, bbox_inches='tight', pad_inches = 0.01)    
 plt.clf()
 
 print("The mean cluster population per cell is", mean(totCellCounts), "with a standard deviation of", std(totCellCounts))
@@ -268,7 +268,7 @@ plt.hist(totCellCounts, bins=arange(0,max(totCellCounts)+2,1)-0.5, edgecolor='k'
 ax.set_xlabel("Galaxy Clusters in Cell")
 ax.set_ylabel("Number of Cells")
 
-fig.savefig(dir_path + '/Cluster Cell Count Histogram.png', dpi=200, bbox_inches='tight', pad_inches = 0)
+fig.savefig(dir_path + '/Cluster Cell Count Histogram.png', dpi=200, bbox_inches='tight', pad_inches = 0.01)
 
 
 #this plots luminosity vs galaxy mass
@@ -289,7 +289,7 @@ ax.set_xlabel("log$_{10}$ Galaxy Mass (kg)")
 plt.errorbar(log10(clusterMasses), log10(clusterGreenLumins), xerr=logMassUnc, yerr=0.03, fmt=',', linewidth=0.5)
 #ax.set_title("Galaxy Luminosity vs Mass")
 
-fig.savefig(dir_path + '/Lumin-vs-Mass.png', dpi=200, bbox_inches='tight', pad_inches = 0)
+fig.savefig(dir_path + '/Lumin-vs-Mass.png', dpi=200, bbox_inches='tight', pad_inches = 0.01)
 
 plt.clf()
 
@@ -301,7 +301,7 @@ ax.set_ylabel("Galaxy Colour ($M_B - M_R$)")
 ax.set_xlabel("Log$_{10}$ Galaxy Distance (pc)")
 #ax.set_title("Galaxy Colour vs Distance")
 
-fig.savefig(dir_path + '/Colour-vs-Distance.png', dpi=200, bbox_inches='tight', pad_inches = 0)
+fig.savefig(dir_path + '/Colour-vs-Distance.png', dpi=200, bbox_inches='tight', pad_inches = 0.01)
 
 plt.clf()
 
@@ -324,7 +324,7 @@ ax.set_xlabel("log$_{10}$ Galaxy Mass (kg)")
 plt.errorbar(log10(clusterMasses), log10(clusterRadii), xerr=logMassUnc, yerr=radUnc, fmt=',', linewidth=0.5)
 #ax.set_title("Galaxy Radius vs Mass")
 
-fig.savefig(dir_path + '/Radius vs Mass.png', dpi=300, bbox_inches='tight', pad_inches = 0)
+fig.savefig(dir_path + '/Radius vs Mass.png', dpi=300, bbox_inches='tight', pad_inches = 0.01)
     
 plt.clf()
 
@@ -349,7 +349,7 @@ for vel in clusterMaxVel:
     MassVelError.append(0.1 / vel)
 plt.errorbar(log10(clusterMasses), log10(clusterMaxVel), xerr=logMassUnc, yerr=MassVelError, fmt=',', linewidth=0.5)
 #ax.set_title("Galaxy Rot Velocity vs Mass")
-fig.savefig(dir_path + '/Rot Velocity vs Mass.png', dpi=300, bbox_inches='tight', pad_inches = 0)
+fig.savefig(dir_path + '/Rot Velocity vs Mass.png', dpi=300, bbox_inches='tight', pad_inches = 0.01)
 
 plt.clf()
 
@@ -360,6 +360,6 @@ ax.set_ylabel("log$_{10}$ Galaxy Size (pc)")
 ax.set_xlabel("log$_{10}$ Galaxy Distance (pc)")
 #ax.set_title("Galaxy Size vs Distance")
 
-fig.savefig(dir_path + '/Size vs Distance.png', dpi=200, bbox_inches='tight', pad_inches = 0)
+fig.savefig(dir_path + '/Size vs Distance.png', dpi=200, bbox_inches='tight', pad_inches = 0.01)
 
 plt.clf()
