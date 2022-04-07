@@ -102,20 +102,19 @@ ax.invert_yaxis()        #flips the y-axis so that polar angle is 0 at due north
 starmap = plt.scatter(starequats, starpolar, s=starbright, c=starcolours, marker='.', linewidths=0)
 
 figure(figsize=(36,18))             #units are inches
-fig.set_dpi(1200)           #sets resolution of image in pixels per square inch?
-fig.savefig(dir_path+'\\starmap.png')
+fig.savefig(dir_path+'\\starmap.png', dpi=400, bbox_inches='tight', pad_inches = 0)
 
 plt.clf()
 
 # make 2 versions, one for analysis (blank name) and one for inclusion in report ('pretty' name)
-for (scale,lwidth,name,DPI,analysis) in [(5,0,'-pretty',400,0), (0.4,0,'-analysis',1200,1)]:
+for (scale,lwidth,name,DPI,analysis) in [(5,0,'-pretty',400,0), (0.4,0,'-analysis',600,1)]:
     #the below plots the redshift map of the stars
     fig, ax = plt.subplots(figsize=(12,6))  #units are inches
     ax.set_xlabel('Equatorial Angle (deg)')
     ax.set_ylabel('Polar Angle (deg)')
     ax.set_facecolor('k')
     ax.invert_yaxis() 
-    if analysis == 1:
+    if analysis == 1:       # version for analysis
         #the below plots major and minor gridlines according to the specified variables
         loc1 = plticker.MultipleLocator(base=5.0) # this locator puts ticks at regular intervals
         loc2 = plticker.MultipleLocator(base=5.0)
@@ -132,11 +131,11 @@ for (scale,lwidth,name,DPI,analysis) in [(5,0,'-pretty',400,0), (0.4,0,'-analysi
             ellipse = patches.Ellipse(xy=(x, y), width=major, height=minor, angle=theta, fill=False, edgecolor='r', linewidth=0.1)  #creates the ellipse
             ax.add_patch(ellipse)       #adds the ellipse to the image
 
-    # version for analysis
+    
     red = plt.scatter(starequats, starpolar, s=scale, c=starredshift, vmin=minvel, vmax=maxvel, cmap=cm , marker='.', linewidths=lwidth)  #note the colourmap for the redshift amount
     cbar = plt.colorbar(red)
     cbar.set_label('Radial Velocity (km/s)', rotation=90)
-    fig.savefig(dir_path+f'\\star-redshift{name}.png', dpi=DPI)
+    fig.savefig(dir_path+f'\\star-redshift{name}.png', dpi=DPI, bbox_inches='tight', pad_inches = 0)
 
 totalpoints.close()
 plt.clf()           #clears the current figure in order to create the next one
@@ -154,7 +153,7 @@ ax.set_ylabel('Polar Angle (deg)')
 ax.set_facecolor('k')
 ax.invert_yaxis() 
 
-fig.savefig(dir_path+'\\our-galaxy.png', dpi=300)
+fig.savefig(dir_path+'\\our-galaxy.png', dpi=300, bbox_inches='tight', pad_inches = 0)
 
 plt.clf()
 
@@ -196,8 +195,7 @@ ax.invert_yaxis()
 plt.scatter(fuzequats, fuzpolar, s=fuzbright, c=fuzcolours, marker='.', linewidths=0)
 
 figure(figsize=(36,18))             #units are inches
-fig.set_dpi(1200)           #sets resolution of image in pixels per square inch?
-fig.savefig(dir_path+'\\fuzzymap.png')
+fig.savefig(dir_path+'\\fuzzymap.png', dpi=600, bbox_inches='tight', pad_inches = 0)
 
 plt.clf()
 
@@ -215,7 +213,6 @@ cbar.set_label('Radial Velocity (km/s)', rotation=90)
 plt.show()
 
 figure(figsize=(60,18))             #units are inches
-fig.set_dpi(1200)           #sets resolution of image in pixels per square inch?
-fig.savefig(dir_path+'\\fuzzy-redshift.png')
+fig.savefig(dir_path+'\\fuzzy-redshift.png', dpi=600, bbox_inches='tight', pad_inches = 0)
 
 totalfuzzy.close()
