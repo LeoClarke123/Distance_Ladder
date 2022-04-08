@@ -20,6 +20,7 @@ longGradUnc = 0
 longIntUnc = 0
 shortGradUnc = 0
 shortIntUnc = 0
+meandifferences = []
 
 for cluster in os.listdir(dir_path + "\\Camera Images\\Star Clusters"):
     stardata = pd.read_csv(dir_path + f"\\Camera Images\\Star Clusters\\{cluster}", delimiter=' ')
@@ -31,6 +32,8 @@ for cluster in os.listdir(dir_path + "\\Camera Images\\Star Clusters"):
     starDist = stardata['Distance']
     starPeriod = stardata['Periodicity']
     starGreen = stardata['GreenFlux']
+    shortPDists = []; longPDists = []; PDists = []
+    differences = []; Ldifferences = []; Sdifferences = []
     for index, distance in enumerate(starDist):
         period = starPeriod[index]
         HRdistance = starDist
@@ -38,6 +41,24 @@ for cluster in os.listdir(dir_path + "\\Camera Images\\Star Clusters"):
         if period != 0 and period > 30:
             periodLDist = sqrt(exp(0.34 * period - 41.3) / flux)
             periodLDistUnc = 2 * periodLDist * sqrt((longGradUnc * period)**2 + longIntUnc**2)
+            longPDists.append(periodLDist)
+            PDists.append(periodLDist)
+            differences.append(periodLDist - clusterDist)
+            meandifferences.append(periodLDist - clusterDist)
+            Ldifferences.append(periodLDist - clusterDist)
         elif period != 0 and period > 10:
             periodSDist = sqrt(exp(-0.64 * period - 3.3) / flux)
-            periodSDistUnc = 2 * periodSDist * sqrt((shortGradUnc * period)**2 + shortIncUnc**2)
+            periodSDistUnc = 2 * periodSDist * sqrt((shortGradUnc * period)**2 + shortIntUnc**2)
+            shortPDists.append(periodSDist)
+            PDists.append(periodSDist)
+            differences.append(periodSDist - clusterDist)
+            meandifferences.append(periodSDist - clusterDist)
+            Sdifferences.append(periodSDist - clusterDist)
+    
+    if len(PDists) > 5:
+        # meandifferences.append(differences)
+        print(clustername, median(Ldifferences), "and", std(Ldifferences))
+    # print(mean(differences), std(differences))
+    
+    
+print("Mean diff = ", median(meandifferences), "with SD = ", std(meandifferences))

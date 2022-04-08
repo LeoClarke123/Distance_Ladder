@@ -49,6 +49,9 @@ def radial_distance(galaxX, galaxY, starX, starY):
     distance = sqrt((deltaX)**2 + (deltaY)**2)
     return distance
 
+def homogeneity_func(r, a, b, c):
+    return a*e**(-b * r) + c
+
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 clusterpath = dir_path.replace("Cluster Analysis", "Data\Camera Images\Star Clusters")
@@ -307,7 +310,7 @@ plt.fill_between(x, lower, upper, color='r', alpha=0.2)
 print(f"M=({z[0]:0.5f} \pm {round(gradUnc,5)}) L + ({z[1]:0.3f} \pm {round(intUnc, 2)}) km/s \nR^2 = {r2_score(clusterMasses,p(clusterGreenLumins)):0.3f}")
 plt.errorbar(clusterGreenLumins, clusterMasses, yerr=massUnc, xerr=luminUnc, fmt=',', linewidth=0.5)
 #ax.set_title("Galaxy Luminosity vs Mass")
-
+ax.ticklabel_format(axis='both', style='scientific', useMathText=True)
 fig.savefig(dir_path + '/Mass-vs-Lumin.png', dpi=200, bbox_inches='tight', pad_inches = 0.01)
 fig.savefig(dir_path + '/Mass-vs-Lumin.pdf', dpi=200, bbox_inches='tight', pad_inches = 0.01)
 
@@ -388,13 +391,50 @@ fig.savefig(dir_path + '/Size vs Distance.pdf', dpi=200, bbox_inches='tight', pa
 
 plt.clf()
 
-fig, ax = plt.subplots()
-values, base = histogram(((galaxData['RadialVelocity'] - 1.643) / -0.00263) * tan(galaxData['Size']), bins=50)
-cumulative = cumsum(values)
-plt.plot(base[:-1], cumulative, c='r')
-ax.set_xlabel("Distance (pc)")
-ax.set_ylabel("Cumulative Distribution Galaxies")
+galaxDistVels = []; dists = []
+galaxVels = galaxData['RadialVelocity']
+for velocity in galaxVels:
+    dists.append((velocity - 1.643) / -0.00263)
+    galaxDistVels.append([(velocity - 1.643) / -0.00263, velocity])
+sortedGalaxies = sorted(galaxDistVels, key=lambda x: x[0])
+maxradius = max(dists)
 
-fig.savefig(dir_path+'\\MainSeqStarTemps.png', dpi=400, bbox_inches='tight', pad_inches = 0.01)
-fig.savefig(dir_path+'\\MainSeqStarTemps.pdf', dpi=400, bbox_inches='tight', pad_inches = 0.01)
+radii = []
+i = 1; shells = 100
+radius = maxradius
+volume = 4/3 * pi * radius**3 / shells
+shell = zeros(shells)
+while i < shells+1:
+    # radius = (radius**3 - volume)**(1/3)
+    radius = maxradius * (i / shells)**(1/3)
+    radii.append(radius)
+    i += 1
+# radii = radii[::-1]
+distUncs = zeros(shells)
+for galaxy in sortedGalaxies:
+    distance = galaxy[0]
+    distUnc = 1.643 / 0.00263 * 0.1
+    for index, radius in enumerate(radii):
+        if distance < radius:
+            shell[index] += 1
+            if distance + distUnc >= radius:
+                distUncs[index] += 1
+            break
+
+logvol = log10(volume)
+x = arange(0.9 * min(radii), 1.1 * max(radii), max(radii) / 20, dtype=float64)
+coefficients, params = curve_fit(homogeneity_func, radii, shell, p0=[2025, 0.000010986, 25])
+
+fig, ax = plt.subplots() 
+plt.scatter(radii, shell, linewidth=0, s=3)
+plt.xlim([0.8 * min(radii), 1.05 * maxradius])
+plt.ylim([0, 1.05*max(shell)])
+ax.set_xlabel("Distance (pc)")
+ax.set_ylabel(r"Galaxy Number Density ($\times 10^{-15.55}$ pc$^{-3}$)")
+ax.ticklabel_format(axis='x', style='scientific', useMathText=True, scilimits=(0,3))
+plt.errorbar(radii, shell, yerr=distUncs, linewidth=0.5, fmt=',')
+plt.plot(x, homogeneity_func(x, coefficients[0], coefficients[1], coefficients[2]), "r--", linewidth=0.5)
+
+fig.savefig(dir_path+'\\Distance Distribution.png', dpi=400, bbox_inches='tight', pad_inches = 0.01)
+fig.savefig(dir_path+'\\Distance Distribution.pdf', dpi=400, bbox_inches='tight', pad_inches = 0.01)
 plt.close(fig)
