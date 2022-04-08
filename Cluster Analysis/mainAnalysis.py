@@ -387,3 +387,14 @@ fig.savefig(dir_path + '/Size vs Distance.png', dpi=200, bbox_inches='tight', pa
 fig.savefig(dir_path + '/Size vs Distance.pdf', dpi=200, bbox_inches='tight', pad_inches = 0.01)
 
 plt.clf()
+
+fig, ax = plt.subplots()
+values, base = histogram(((galaxData['RadialVelocity'] - 1.643) / -0.00263) * tan(galaxData['Size']), bins=50)
+cumulative = cumsum(values)
+plt.plot(base[:-1], cumulative, c='r')
+ax.set_xlabel("Distance (pc)")
+ax.set_ylabel("Cumulative Distribution Galaxies")
+
+fig.savefig(dir_path+'\\MainSeqStarTemps.png', dpi=400, bbox_inches='tight', pad_inches = 0.01)
+fig.savefig(dir_path+'\\MainSeqStarTemps.pdf', dpi=400, bbox_inches='tight', pad_inches = 0.01)
+plt.close(fig)

@@ -13,7 +13,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import figure
 from scipy.optimize import curve_fit
-import scipy.integrate as integrate
 
 def planck_func(x, T, a):
     '''This is a planck function to be used with the scipy.optimize.curve_fit() function. 
