@@ -296,7 +296,7 @@ for luminosity in clusterGreenLumins:
 fig, ax = plt.subplots()
 plt.scatter(clusterGreenLumins, clusterMasses, s=3)
 ax.set_ylabel("Galaxy Mass (kg)")
-ax.set_xlabel("Galaxy V Band Luminosity (W m$^{-2}$ nm$^{-1}$)")
+ax.set_xlabel("Galaxy V Band Luminosity (W nm$^{-1}$)")
 
 x = arange(min(clusterGreenLumins), 1.05*max(clusterGreenLumins), 10**27, dtype=float64)
 z,cov = polyfit(clusterGreenLumins, clusterMasses, 1, cov=True)     #this finds the linear fit for the data
@@ -306,6 +306,8 @@ upper = (z[0] + gradUnc) * x + (z[1] - intUnc)
 lower = (z[0] - gradUnc) * x + (z[1] + intUnc)
 plt.plot(x,p(x),"r--", linewidth=0.5)
 plt.fill_between(x, lower, upper, color='r', alpha=0.2)
+MLgrad = z[0]; MLgradUnc = gradUnc
+MLint = z[1]; MLintUnc = intUnc
 
 print(f"M=({z[0]:0.5f} \pm {round(gradUnc,5)}) L + ({z[1]:0.3f} \pm {round(intUnc, 2)}) km/s \nR^2 = {r2_score(clusterMasses,p(clusterGreenLumins)):0.3f}")
 plt.errorbar(clusterGreenLumins, clusterMasses, yerr=massUnc, xerr=luminUnc, fmt=',', linewidth=0.5)
@@ -391,6 +393,8 @@ fig.savefig(dir_path + '/Size vs Distance.pdf', dpi=200, bbox_inches='tight', pa
 
 plt.clf()
 
+
+#The following code analyses and plots the homogeneity (number density) of the universe
 galaxDistVels = []; dists = []
 galaxVels = galaxData['RadialVelocity']
 for velocity in galaxVels:
@@ -405,11 +409,10 @@ radius = maxradius
 volume = 4/3 * pi * radius**3 / shells
 shell = zeros(shells)
 while i < shells+1:
-    # radius = (radius**3 - volume)**(1/3)
     radius = maxradius * (i / shells)**(1/3)
     radii.append(radius)
     i += 1
-# radii = radii[::-1]
+
 distUncs = zeros(shells)
 for galaxy in sortedGalaxies:
     distance = galaxy[0]
@@ -438,3 +441,36 @@ plt.plot(x, homogeneity_func(x, coefficients[0], coefficients[1], coefficients[2
 fig.savefig(dir_path+'\\Distance Distribution.png', dpi=400, bbox_inches='tight', pad_inches = 0.01)
 fig.savefig(dir_path+'\\Distance Distribution.pdf', dpi=400, bbox_inches='tight', pad_inches = 0.01)
 plt.close(fig)
+
+#the following analyses the luminous-to-total cluster mass
+GalClustPath = dir_path.replace("Cluster Analysis", "Data\Camera Images\Fuzzy Clusters")
+
+for cluster in os.listdir(GalClustPath):
+    try:
+        clusterdata = pd.read_csv(GalClustPath + f"\{cluster}", delimiter=' ')
+        clustername = cluster.replace(".txt", "")
+        clusterGreenF = clusterdata['GreenFlux']
+        clusterEquat = clusterdata['Equatorial']; clusterPolar = clusterdata['Polar']
+        clusterVel = clusterdata['RadialVelocity']
+        clusterDist = clusterdata['Distance']
+        clustFastECoord = clusterEquat.loc[clusterVel == min(clusterVel)].iloc[0]
+        clustFastPCoord = clusterPolar.loc[clusterVel == min(clusterVel)].iloc[0]
+        clustSlowECoord = clusterEquat.loc[clusterVel == max(clusterVel)].iloc[0]
+        clustSlowPCoord = clusterPolar.loc[clusterVel == max(clusterVel)].iloc[0]
+        clustPolarExtent = (max([clustFastPCoord, clustSlowPCoord]) - min([clustFastPCoord, clustSlowPCoord])) / 2
+        clustEquatExtent = (max([clustFastECoord, clustSlowECoord]) - min([clustFastECoord, clustSlowECoord])) / 2
+        clustAngRadius = sqrt(clustPolarExtent**2 + clustEquatExtent**2)
+        clustRadius = clusterDist[1] * tan(clustAngRadius * pi / 180) * 3.086 * 10**16
+        highVel = clusterVel.loc[clusterVel == max(clusterVel)].iloc[0]
+        lowVel = clusterVel.loc[clusterVel == min(clusterVel)].iloc[0]
+        dispersion = 3 * abs(highVel - lowVel)
+        # dispersion = 3 * std(clusterVel)
+        totClustMass = (3 * pi * clustRadius * dispersion**2) / (2 * 6.67 * 10**(-11))
+        ClustLumMass = 0
+        for index, greenlum in enumerate(clusterGreenF):
+            galaxMass = MLgrad * (greenlum * 4 * pi * clusterDist[index] * 3.086 * 10**16) + MLint
+            ClustLumMass += galaxMass
+        # print(totClustMass - ClustLumMass)
+    except KeyError:
+        pass
+
