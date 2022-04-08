@@ -275,26 +275,41 @@ fig.savefig(dir_path + '/Cluster Cell Count Histogram.png', dpi=200, bbox_inches
 fig.savefig(dir_path + '/Cluster Cell Count Histogram.pdf', dpi=200, bbox_inches='tight', pad_inches = 0.01)
 
 
+for index, luminosity in enumerate(clusterGreenLumins): 
+    if luminosity > 7.3 * 10**28:
+        del clusterGreenLumins[index]
+        del clusterMasses[index]
+        del logMassUnc[index]
+        del clusterRadii[index]
+        del clusterMaxVel[index]
+        del radUnc[index]
+        del massUnc[index]
+luminUnc = []
+for luminosity in clusterGreenLumins:
+    luminUnc.append(0.03 * luminosity)
+        
+
 #this plots luminosity vs galaxy mass
 fig, ax = plt.subplots()
-plt.scatter(log10(clusterMasses), log10(clusterGreenLumins), s=3)
-ax.set_ylabel("log$_{10}$ Galaxy V Band Luminosity (W m$^{-2}$ nm$^{-1}$)")
-ax.set_xlabel("log$_{10}$ Galaxy Mass (kg)")
-# x = arange(min(log10(clusterMasses)), max(log10(clusterMasses)), 0.1)
-# z,cov = polyfit(log10(clusterMasses), log10(clusterGreenLumins), 1, cov=True)     #this finds the linear fit for the data
-# p = poly1d(z)
-# gradUnc, intUnc = sqrt(diag(cov))
-# upper = (z[0] + gradUnc) * x + (z[1] - intUnc)
-# lower = (z[0] - gradUnc) * x + (z[1] + intUnc)
-# plt.plot(log10(clusterMasses),p(log10(clusterMasses)),"r--", linewidth=0.5)
-# plt.fill_between(x, lower, upper, color='r', alpha=0.2)
+plt.scatter(clusterGreenLumins, clusterMasses, s=3)
+ax.set_ylabel("Galaxy Mass (kg)")
+ax.set_xlabel("Galaxy V Band Luminosity (W m$^{-2}$ nm$^{-1}$)")
 
-# print(f"log10(L_G)=({z[0]:0.5f} \pm {round(gradUnc,5)}) M + ({z[1]:0.3f} \pm {round(intUnc, 2)}) km/s \nR^2 = {r2_score(log10(clusterGreenLumins),p(log10(clusterMasses))):0.3f}")
-plt.errorbar(log10(clusterMasses), log10(clusterGreenLumins), xerr=logMassUnc, yerr=0.03, fmt=',', linewidth=0.5)
+x = arange(min(clusterGreenLumins), 1.05*max(clusterGreenLumins), 10**27, dtype=float64)
+z,cov = polyfit(clusterGreenLumins, clusterMasses, 1, cov=True)     #this finds the linear fit for the data
+p = poly1d(z)
+gradUnc, intUnc = sqrt(diag(cov))
+upper = (z[0] + gradUnc) * x + (z[1] - intUnc)
+lower = (z[0] - gradUnc) * x + (z[1] + intUnc)
+plt.plot(x,p(x),"r--", linewidth=0.5)
+plt.fill_between(x, lower, upper, color='r', alpha=0.2)
+
+print(f"M=({z[0]:0.5f} \pm {round(gradUnc,5)}) L + ({z[1]:0.3f} \pm {round(intUnc, 2)}) km/s \nR^2 = {r2_score(clusterMasses,p(clusterGreenLumins)):0.3f}")
+plt.errorbar(clusterGreenLumins, clusterMasses, yerr=massUnc, xerr=luminUnc, fmt=',', linewidth=0.5)
 #ax.set_title("Galaxy Luminosity vs Mass")
 
-fig.savefig(dir_path + '/Lumin-vs-Mass.png', dpi=200, bbox_inches='tight', pad_inches = 0.01)
-fig.savefig(dir_path + '/Lumin-vs-Mass.pdf', dpi=200, bbox_inches='tight', pad_inches = 0.01)
+fig.savefig(dir_path + '/Mass-vs-Lumin.png', dpi=200, bbox_inches='tight', pad_inches = 0.01)
+fig.savefig(dir_path + '/Mass-vs-Lumin.pdf', dpi=200, bbox_inches='tight', pad_inches = 0.01)
 
 plt.clf()
 
