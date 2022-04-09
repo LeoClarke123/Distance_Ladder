@@ -62,7 +62,7 @@ maxvel = 0
 for row in stardata:
     [name, equat, polar, bluef, greenf, redf, parallax, veloc, distance, period, periodunc, location] = row.split()
     bluef, greenf, redf, veloc = float(bluef), float(greenf), float(redf), float(veloc)       #cleans up variables
-    rgb = [bluef, greenf, redf]
+    rgb = [redf, greenf, bluef]
     aveflux = average(rgb)          #averages the r g b flux values
     allstaraveflux.append(aveflux)      #adds it to a list
     stararray.append([equat, polar, aveflux])       
@@ -145,8 +145,8 @@ plt.clf()           #clears the current figure in order to create the next one
 fig, ax = plt.subplots(figsize=(12,6))  #units are inches
 radialvelocitycutoff = 2
 parallaxcutoff = 0.01
-calStarEquats = Pstardata.loc[(Pstardata['Parallax'] > parallaxcutoff) & (abs(Pstardata["RadialVelocity"]) < radialvelocitycutoff)].iloc[:, 1]
-calStarPolar = Pstardata.loc[(Pstardata['Parallax'] > parallaxcutoff) & (abs(Pstardata["RadialVelocity"]) < radialvelocitycutoff)].iloc[:, 2]
+calStarEquats = Pstardata.loc[(abs(Pstardata['Parallax']) > parallaxcutoff) & (abs(Pstardata["RadialVelocity"]) < radialvelocitycutoff)].iloc[:, 1]
+calStarPolar = Pstardata.loc[(abs(Pstardata['Parallax']) > parallaxcutoff) & (abs(Pstardata["RadialVelocity"]) < radialvelocitycutoff)].iloc[:, 2]
 plt.scatter(calStarEquats, calStarPolar, s=2, color='w')
 print(len(calStarEquats))
 
@@ -160,6 +160,34 @@ fig.savefig(dir_path+'\\our-galaxy.pdf', dpi=300, bbox_inches='tight', pad_inche
 
 plt.clf()
 
+
+#the following plots a 3D galaxy map
+localDists = array(Pstardata.loc[(abs(Pstardata['Parallax']) > 0.005)].iloc[:, 8])
+localEquat = array(Pstardata.loc[(abs(Pstardata['Parallax']) > 0.005)].iloc[:, 1])
+localPolar = array(Pstardata.loc[(abs(Pstardata['Parallax']) > 0.005)].iloc[:, 2])
+X = zeros(len(localDists)); Y = zeros(len(localDists)); Z = zeros(len(localDists))
+for index, stardist in enumerate(localDists):
+    stardist = float(stardist)
+    starTheta = localEquat[index] * 2 * pi / 360
+    starPhi = localPolar[index] * pi / 180
+    X[index] = stardist * sin(starPhi) * cos(starTheta)
+    Y[index] = stardist * sin(starPhi) * sin(starTheta)
+    Z[index] = stardist * cos(starPhi)
+
+fig = plt.figure(figsize=(7,7))
+ax = fig.add_subplot(projection='3d')
+ax.scatter(X, Y, Z, marker='.', s=10, linewidth=0)
+ax.scatter(0, 0, 0, marker='.', s=20, c='r', linewidth=0)
+ax.set_zlim(-100,100)
+ax.set_zlabel("Z Coordinate (pc)")
+ax.set_xlabel("X Coordinate (pc)")
+ax.set_ylabel("Y Coordinate (pc)")
+
+fig.savefig(dir_path+'\\3D-galaxy.png', dpi=300, bbox_inches='tight', pad_inches = 0.01)
+fig.savefig(dir_path+'\\3D-galaxy.pdf', dpi=300, bbox_inches='tight', pad_inches = 0.01)
+
+
+#following does fuzzy maps
 minvel = 0
 maxvel = 0
 
