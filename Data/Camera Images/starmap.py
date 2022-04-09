@@ -162,9 +162,9 @@ plt.clf()
 
 
 #the following plots a 3D galaxy map
-localDists = array(Pstardata.loc[(abs(Pstardata['Parallax']) > 0.005)].iloc[:, 8])
-localEquat = array(Pstardata.loc[(abs(Pstardata['Parallax']) > 0.005)].iloc[:, 1])
-localPolar = array(Pstardata.loc[(abs(Pstardata['Parallax']) > 0.005)].iloc[:, 2])
+localDists = array(Pstardata.loc[(abs(Pstardata['Parallax']) > 0.007)].iloc[:, 8])
+localEquat = array(Pstardata.loc[(abs(Pstardata['Parallax']) > 0.007)].iloc[:, 1])
+localPolar = array(Pstardata.loc[(abs(Pstardata['Parallax']) > 0.007)].iloc[:, 2])
 X = zeros(len(localDists)); Y = zeros(len(localDists)); Z = zeros(len(localDists))
 for index, stardist in enumerate(localDists):
     stardist = float(stardist)
