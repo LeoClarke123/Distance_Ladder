@@ -105,7 +105,7 @@ figure(figsize=(36,18))             #units are inches
 fig.savefig(dir_path+'\\starmap.png', dpi=400, bbox_inches='tight', pad_inches = 0.01)
 fig.savefig(dir_path+'\\starmap.pdf', dpi=400, bbox_inches='tight', pad_inches = 0.01)
 
-plt.clf()
+plt.close(fig)
 
 # make 2 versions, one for analysis (blank name) and one for inclusion in report ('pretty' name)
 for (scale,lwidth,name,DPI,analysis) in [(5,0,'-pretty',400,0), (0.4,0,'-analysis',600,1)]:
@@ -158,7 +158,7 @@ ax.invert_yaxis()
 fig.savefig(dir_path+'\\our-galaxy.png', dpi=300, bbox_inches='tight', pad_inches = 0.01)
 fig.savefig(dir_path+'\\our-galaxy.pdf', dpi=300, bbox_inches='tight', pad_inches = 0.01)
 
-plt.clf()
+plt.close(fig)
 
 
 #the following plots a 3D galaxy map
@@ -186,6 +186,12 @@ ax.set_ylabel("Y Coordinate (pc)")
 fig.savefig(dir_path+'\\3D-galaxy.png', dpi=300, bbox_inches='tight', pad_inches = 0.01)
 fig.savefig(dir_path+'\\3D-galaxy.pdf', dpi=300, bbox_inches='tight', pad_inches = 0.01)
 
+ax.view_init(10, 10)
+
+fig.savefig(dir_path+'\\3D-galaxy-rotated.png', dpi=300, bbox_inches='tight', pad_inches = 0.01)
+fig.savefig(dir_path+'\\3D-galaxy-rotated.pdf', dpi=300, bbox_inches='tight', pad_inches = 0.01)
+
+plt.close(fig)
 
 #following does fuzzy maps
 minvel = 0
@@ -229,7 +235,7 @@ figure(figsize=(36,18))             #units are inches
 fig.savefig(dir_path+'\\fuzzymap.png', dpi=600, bbox_inches='tight', pad_inches = 0.01)
 fig.savefig(dir_path+'\\fuzzymap.pdf', dpi=600, bbox_inches='tight', pad_inches = 0.01)
 
-plt.clf()
+plt.close(fig)
 
 cm = plt.cm.get_cmap('Blues_r')
 
@@ -247,5 +253,7 @@ plt.show()
 figure(figsize=(60,18))             #units are inches
 fig.savefig(dir_path+'\\fuzzy-redshift.png', dpi=600, bbox_inches='tight', pad_inches = 0.01)
 fig.savefig(dir_path+'\\fuzzy-redshift.pdf', dpi=600, bbox_inches='tight', pad_inches = 0.01)
+
+plt.close(fig)
 
 totalfuzzy.close()
