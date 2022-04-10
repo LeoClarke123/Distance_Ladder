@@ -30,6 +30,7 @@ import matplotlib.pyplot as plt
 from matplotlib.pyplot import figure
 import matplotlib.ticker as plticker
 import matplotlib.patches as patches
+from matplotlib import animation
 import pandas as pd
 
 
@@ -148,7 +149,6 @@ parallaxcutoff = 0.01
 calStarEquats = Pstardata.loc[(abs(Pstardata['Parallax']) > parallaxcutoff) & (abs(Pstardata["RadialVelocity"]) < radialvelocitycutoff)].iloc[:, 1]
 calStarPolar = Pstardata.loc[(abs(Pstardata['Parallax']) > parallaxcutoff) & (abs(Pstardata["RadialVelocity"]) < radialvelocitycutoff)].iloc[:, 2]
 plt.scatter(calStarEquats, calStarPolar, s=2, color='w')
-print(len(calStarEquats))
 
 ax.set_xlabel('Equatorial Angle (deg)')
 ax.set_ylabel('Polar Angle (deg)')
@@ -183,6 +183,21 @@ ax.set_zlabel("Z Coordinate (pc)")
 ax.set_xlabel("X Coordinate (pc)")
 ax.set_ylabel("Y Coordinate (pc)")
 
+#the following code produces an animation of the above 3D plot, rotating the axis by 360 degrees to give a full view of the picture
+frames = 200
+fps = 20
+def animate(i):
+    ax.view_init(elev=10., azim=i * (360 / frames))
+    return fig,
+
+ani = animation.FuncAnimation(fig, animate, frames=frames, interval=round(1000/fps,0))
+
+plt.tight_layout()
+plt.show()
+
+ani.save(dir_path + "\\3D Scatter Animation.gif", writer='pillow')
+
+#now that the animation is done and saved, time to save the original plots
 fig.savefig(dir_path+'\\3D-galaxy.png', dpi=300, bbox_inches='tight', pad_inches = 0.01)
 fig.savefig(dir_path+'\\3D-galaxy.pdf', dpi=300, bbox_inches='tight', pad_inches = 0.01)
 
@@ -191,7 +206,13 @@ ax.view_init(10, 10)
 fig.savefig(dir_path+'\\3D-galaxy-rotated.png', dpi=300, bbox_inches='tight', pad_inches = 0.01)
 fig.savefig(dir_path+'\\3D-galaxy-rotated.pdf', dpi=300, bbox_inches='tight', pad_inches = 0.01)
 
-plt.close(fig)
+try:
+    plt.close(fig)
+except UserWarning:
+    plt.close(fig)
+
+
+
 
 #following does fuzzy maps
 minvel = 0
