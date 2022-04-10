@@ -303,5 +303,5 @@ TSWLatexianTemp*
 # Ciaran: need to add some lines so I don't commit like 500 auxiliary things every time.
 .history
 __pycache__
-HR_Diagram/HR.py
 *.json
+
