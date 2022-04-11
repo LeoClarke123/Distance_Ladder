@@ -30,6 +30,7 @@ starDist = stardata['Distance']
 
 r, g, b = 700 * 10**(-9), 500 * 10**(-9), 440 * 10**(-9)        #corresponding wavelengths for each luminosity measurement
 wavelengths = array([r, g, b], dtype=float64)
+colours = ["r", "g", "b"]
 
 temps = []; lowtemps = []
 uncertainties = []
@@ -41,8 +42,24 @@ for index, star in enumerate(starRed):
         starTemp, mult = starProps
         if starTemp < 200000:       
             temps.append(starTemp)
+            uncertainties.append(sqrt(diag(params))[0])
         if starTemp < 50000:        #for the zoomed in histogram
             lowtemps.append(starTemp)
+        # if sqrt(diag(params))[0] < 200:
+        fig, ax = plt.subplots()
+        x = arange(10*10**(-9), 1300*10**(-9), 900*10**(-9) / 50)
+        planck = mult * (4.702 * 10**(-15) / (x)**5) * (1 / (exp(0.01439 / (x * starTemp)) - 1))
+        plt.plot(x * 10**9, planck, c='k', linewidth=0.7)
+        for i in range(0,3):
+            plt.scatter(wavelengths[i] * 10**9, lumins[i], c=colours[i], s=10)
+            plt.errorbar(wavelengths[i] * 10**9, lumins[i], yerr=0.015*lumins[i], linewidth=1, fmt=',', c=colours[i])
+        ax.set_xlabel("Wavelength (nm)")
+        ax.set_ylabel("Specific Luminosity (W.nm$^{-1}$)")
+        
+        ax.ticklabel_format(axis='x', style='scientific', useMathText=True)
+        fig.savefig(dir_path+f'\\Blackbody Curves\\{stardata["Name"][index]}-T{round(starTemp)}K.png', dpi=100, bbox_inches='tight', pad_inches = 0.01)
+        fig.savefig(dir_path+f'\\Blackbody Curves\\{stardata["Name"][index]}-T{round(starTemp)}K.pdf', dpi=100, bbox_inches='tight', pad_inches = 0.01)
+        plt.close(fig)
     except RuntimeError:        #for cases where the curve_fit function can't find the temperature
         pass
 

@@ -88,7 +88,7 @@ else:
 brightest = max(allstaraveflux)         #finds the brightest star for normalization purposes
 
 for star in stararray:
-    brightness = 20*sqrt(11) * log10((star[2] / brightest) + 1)            #defines scatter marker 'brightness' based on logarithmic algorithm. Spits out value between 0 and 1
+    brightness = 0.6 * abs(log10((star[2] / brightest)))           #defines scatter marker 'brightness' based on logarithmic algorithm. Spits out value between 0 and 1
     starbright.append(brightness)
 
 starcolours = array(starcolours)/256        #gets the rgb values between 0 and 1 (because the scatter function chucked a tantrum)

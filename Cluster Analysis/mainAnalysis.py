@@ -165,15 +165,16 @@ for cluster in StarClusters:
     
     allTrends.append(p / p(max(x)))
     
-    fig.savefig(dir_path+f'\\Rotation Curves\\{cluster}.png', dpi=200, bbox_inches='tight', pad_inches = 0.01)
-    fig.savefig(dir_path+f'\\Rotation Curves\\{cluster}.pdf', dpi=200, bbox_inches='tight', pad_inches = 0.01)
+    r2score = r2_score(trendVels, p(log10(trendRads)))
+    fig.savefig(dir_path+f'\\Rotation Curves\\{cluster}-R2={r2score:0.3f}.png', dpi=200, bbox_inches='tight', pad_inches = 0.01)
+    fig.savefig(dir_path+f'\\Rotation Curves\\{cluster}-R2={r2score:0.3f}.pdf', dpi=200, bbox_inches='tight', pad_inches = 0.01)
     plt.close(fig)
-    plt.clf()
+    
     
 x = arange(0.01, 1.01, 0.01)
 fig, ax = plt.subplots()
 for trendline in allTrends:
-    plt.plot(x, trendline(log10(x)), linewidth=0.5)
+    plt.plot(x, trendline(log10(x)), color='g', alpha=0.4, linewidth=0.5)
 ax.set_ylabel("Rotational Velocity (prop. of v$_{max}$)")
 ax.set_xlabel("Radius (prop. of Galactic Radius)")
 plt.ylim([0, 0.8])
@@ -202,7 +203,7 @@ for galaxyCluster in clusterNames:
     xtext = float(xtext[-3:]); ytext = float(ytext[-3:])
     clusterCoords.append((xtext, ytext))
 
-rings = 14      #number of rings to divide rectangle into. make sure that this number is even
+rings = 8      #number of rings to divide rectangle into. make sure that this number is even
 height = 180/rings      #height of each ring (in degrees)
 ringArea = 4 * pi / rings       #each ring should have same area 
 upper = pi / 2      #starts with the upper bound of the graph at pi/2 radians (north pole)
@@ -266,7 +267,7 @@ cbar.set_label('Cluster Population in Cell', rotation=90)
 
 fig.savefig(dir_path + '/Isotropy.png', dpi=200, bbox_inches='tight', pad_inches = 0.01)   
 fig.savefig(dir_path + '/Isotropy.pdf', dpi=200, bbox_inches='tight', pad_inches = 0.01)    
-plt.clf()
+plt.close(fig)
 
 print("The mean cluster population per cell is", mean(totCellCounts), "with a standard deviation of", std(totCellCounts))
 fig, ax = plt.subplots()
@@ -316,7 +317,7 @@ ax.ticklabel_format(axis='both', style='scientific', useMathText=True)
 fig.savefig(dir_path + '/Mass-vs-Lumin.png', dpi=200, bbox_inches='tight', pad_inches = 0.01)
 fig.savefig(dir_path + '/Mass-vs-Lumin.pdf', dpi=200, bbox_inches='tight', pad_inches = 0.01)
 
-plt.clf()
+plt.close(fig)
 
 #this calculates and plots the colour of a galaxy based on distance
 fig, ax = plt.subplots()
@@ -329,7 +330,20 @@ ax.set_xlabel("Log$_{10}$ Galaxy Distance (pc)")
 fig.savefig(dir_path + '/Colour-vs-Distance.png', dpi=200, bbox_inches='tight', pad_inches = 0.01)
 fig.savefig(dir_path + '/Colour-vs-Distance.pdf', dpi=200, bbox_inches='tight', pad_inches = 0.01)
 
-plt.clf()
+plt.close(fig)
+
+#######this plots galaxy radius against galaxy vmax
+fig, ax = plt.subplots()
+
+plt.scatter(clusterMaxVel, clusterRadii, s=0.1)
+ax.set_ylabel("log$_{10}$ Galaxy Radius (pc)")
+ax.set_xlabel("log$_{10}$ Galaxy Rot Velocity (km s$^{-1}$)")
+#ax.set_title("Galaxy Colour vs Distance")
+
+fig.savefig(dir_path + '/Radius-vs-Vmax.png', dpi=200, bbox_inches='tight', pad_inches = 0.01)
+fig.savefig(dir_path + '/Radius-vs-Vmax.pdf', dpi=200, bbox_inches='tight', pad_inches = 0.01)
+
+plt.close(fig)
 
 #this plots the galaxy radii vs the mass
 fig, ax = plt.subplots()
@@ -445,6 +459,8 @@ plt.close(fig)
 #the following analyses the luminous-to-total cluster mass
 GalClustPath = dir_path.replace("Cluster Analysis", "Data\Camera Images\Fuzzy Clusters")
 
+totToLumRatios = []
+clustLumMasses = []; clustTotMasses = []; lumToTotRatios = []
 for cluster in os.listdir(GalClustPath):
     try:
         clusterdata = pd.read_csv(GalClustPath + f"\{cluster}", delimiter=' ')
@@ -463,14 +479,65 @@ for cluster in os.listdir(GalClustPath):
         clustRadius = clusterDist[1] * tan(clustAngRadius * pi / 180) * 3.086 * 10**16
         highVel = clusterVel.loc[clusterVel == max(clusterVel)].iloc[0]
         lowVel = clusterVel.loc[clusterVel == min(clusterVel)].iloc[0]
-        dispersion = 3 * abs(highVel - lowVel)
+        dispersion = 3 * abs(highVel - lowVel) * 1000
         # dispersion = 3 * std(clusterVel)
         totClustMass = (3 * pi * clustRadius * dispersion**2) / (2 * 6.67 * 10**(-11))
+        clustTotMasses.append(totClustMass)
         ClustLumMass = 0
         for index, greenlum in enumerate(clusterGreenF):
             galaxMass = MLgrad * (greenlum * 4 * pi * clusterDist[index] * 3.086 * 10**16) + MLint
             ClustLumMass += galaxMass
-        # print(totClustMass - ClustLumMass)
+        clustLumMasses.append(ClustLumMass)
+        totToLumRatios.append(totClustMass / ClustLumMass)
+        lumToTotRatios.append(ClustLumMass / totClustMass)
     except KeyError:
         pass
 
+for index, mass in enumerate(clustTotMasses):
+    if mass > 2*10**37 or totToLumRatios[index] > 3000:
+        del clustTotMasses[index]
+        del clustLumMasses[index]
+        del totToLumRatios[index]
+        del lumToTotRatios[index]
+
+for index, ratio in enumerate(totToLumRatios):
+    if ratio > 3000:
+        del clustTotMasses[index]
+        del clustLumMasses[index]
+        del totToLumRatios[index]
+        del lumToTotRatios[index]
+
+print("The mean Total Cluster Mass to Luminous Cluster Mass ratio for galaxy clusters is", mean(totToLumRatios), "with standard deviation", std(totToLumRatios))
+
+fig, ax = plt.subplots() 
+plt.scatter(log10(clustLumMasses), log10(clustTotMasses), linewidth=0, s=3)
+
+ax.set_xlabel("Luminous Cluster Mass (kg)")
+ax.set_ylabel("Virial Cluster Mass (kg)")
+ax.ticklabel_format(axis='both', style='scientific', useMathText=True, scilimits=(0,3))
+
+fig.savefig(dir_path+'\\Tot-vs-Lum Cluster Mass.png', dpi=400, bbox_inches='tight', pad_inches = 0.01)
+fig.savefig(dir_path+'\\Tot-vs-Lum Cluster Mass.pdf', dpi=400, bbox_inches='tight', pad_inches = 0.01)
+plt.close(fig)
+
+fig, ax = plt.subplots() 
+plt.hist(totToLumRatios, bins=40)
+
+ax.set_xlabel(r"Cluster Virial Mass to Luminous Mass Ratio $(M_V / M_L)$")
+ax.set_ylabel("Number Count")
+ax.ticklabel_format(axis='both', style='scientific', useMathText=True, scilimits=(0,3))
+
+fig.savefig(dir_path+'\\Total-to-Luminous Ratio Histogram.png', dpi=400, bbox_inches='tight', pad_inches = 0.01)
+fig.savefig(dir_path+'\\Total-to-Luminous Ratio Histogram.pdf', dpi=400, bbox_inches='tight', pad_inches = 0.01)
+plt.close(fig)
+
+fig, ax = plt.subplots() 
+plt.hist(lumToTotRatios, bins=40)
+
+ax.set_xlabel(r"Cluster Luminous Mass to Virial Mass Ratio $(M_L / M_V)$")
+ax.set_ylabel("Number Count")
+ax.ticklabel_format(axis='both', style='scientific', useMathText=True, scilimits=(0,3))
+
+fig.savefig(dir_path+'\\Luminous-to-Total Ratio Histogram.png', dpi=400, bbox_inches='tight', pad_inches = 0.01)
+fig.savefig(dir_path+'\\Luminous-to-Total Ratio Histogram.pdf', dpi=400, bbox_inches='tight', pad_inches = 0.01)
+plt.close(fig)
