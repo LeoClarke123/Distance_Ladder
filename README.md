@@ -1,5 +1,5 @@
 # PHYS3080 Distance Ladder Project
-This GitHub repo serves as the home for all of the data and subsequent analysis for the mock-universe supplied as part of the PHYS3080 Distance Ladder project (c. Sem 1 2022). Ryan White, Ciaran Komarakul-Green and Leo Clarke contributed to this project primarily through Spyder and Jupyter python interpreters. 
+This GitHub repo serves as the home for all of the data and subsequent analysis for the mock-universe supplied as part of the PHYS3080 Distance Ladder project (c. Sem 1 2022). Ryan White, Ciaran Komarakul-Greene and Leo Clarke contributed to this project primarily through Spyder and Jupyter python interpreters. 
 # If you're a visitor...
 - Take a look at the Cluster Analysis folder for graphs and programs related to nearby galaxies, and some for the galaxies in the distant universe. 
 - Take a look at HR_Diagram to look at the benchmark HR diagram from nearby stars, or the vertically shifted HR diagrams for nearby galaxies.
