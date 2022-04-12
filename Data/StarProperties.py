@@ -7,6 +7,7 @@ Created on Wed Apr  6 16:11:16 2022
 This function takes star spectra data for stars of known distance, and attempts to plot a planck curve to the data. 
 Once this has been done, the temperature of the star is taken and then all of the temperatures of the stars are plotted on a histogram. 
 """
+import statistics
 from numpy import *
 import os 
 import pandas as pd
@@ -108,3 +109,4 @@ fig.savefig(dir_path+'\\MainSeqStarTemps.png', dpi=400, bbox_inches='tight', pad
 fig.savefig(dir_path+'\\MainSeqStarTemps.pdf', dpi=400, bbox_inches='tight', pad_inches = 0.01)
 plt.close(fig)
 
+logging.info(f"Low temps median {statistics.median(lowtemps)}")
