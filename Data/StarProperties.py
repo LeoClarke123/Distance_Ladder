@@ -10,9 +10,14 @@ Once this has been done, the temperature of the star is taken and then all of th
 from numpy import *
 import os 
 import pandas as pd
+import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.pyplot import figure
 from scipy.optimize import curve_fit
+import logging
+
+logging.basicConfig(level=logging.INFO)
+matplotlib.use('Agg') # ! (Ciaran)  can't run the code without this, not sure why
+
 
 def planck_func(x, T, a):
     '''This is a planck function to be used with the scipy.optimize.curve_fit() function. 
@@ -25,28 +30,33 @@ def planck_func(x, T, a):
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 stardata = pd.read_csv(dir_path + "\\Camera Images\\calibrated star data.txt", delimiter=' ')
+starLabel = stardata['Name']
 starRed = stardata['RedFlux']; starGreen = stardata['GreenFlux']; starBlue = stardata['BlueFlux']
 starDist = stardata['Distance']
+
+logging.debug(f"len(starRed) = {len(starRed)}")
 
 r, g, b = 700 * 10**(-9), 500 * 10**(-9), 440 * 10**(-9)        #corresponding wavelengths for each luminosity measurement
 wavelengths = array([r, g, b], dtype=float64)
 colours = ["r", "g", "b"]
 
-temps = []; lowtemps = []
+temps = []; lowtemps = []; names = []
 uncertainties = []
 for index, star in enumerate(starRed):
     distMult = (starDist[index] * 3.086 * 10**16)**2        #approximates the actual luminosity by multiplying the lumin by the distance to it
     lumins = array([starRed[index]*distMult, starGreen[index]*distMult, starBlue[index]*distMult], dtype=float64)   #RGB luminosity for the star
     try:
+        fig, ax = plt.subplots()
+        
         starProps, params = curve_fit(planck_func, wavelengths, lumins, p0=[10000, 5 * 10**7])      #fits the planck curve to the data, with initial guess T=10000K
         starTemp, mult = starProps
-        if starTemp < 200000:       
+        if starTemp < 200000:
+            names.append(starLabel[index])
             temps.append(starTemp)
             uncertainties.append(sqrt(diag(params))[0])
         if starTemp < 50000:        #for the zoomed in histogram
             lowtemps.append(starTemp)
         # if sqrt(diag(params))[0] < 200:
-        fig, ax = plt.subplots()
         x = arange(10*10**(-9), 1300*10**(-9), 900*10**(-9) / 50)
         planck = mult * (4.702 * 10**(-15) / (x)**5) * (1 / (exp(0.01439 / (x * starTemp)) - 1))
         plt.plot(x * 10**9, planck, c='k', linewidth=0.7)
@@ -62,6 +72,11 @@ for index, star in enumerate(starRed):
         plt.close(fig)
     except RuntimeError:        #for cases where the curve_fit function can't find the temperature
         pass
+    finally:
+        plt.close(fig)
+
+# write star label, temp, uncertainty to a csv
+pd.DataFrame([names, temps, uncertainties]).transpose().to_csv(dir_path+'\\temperatureUncertainties.csv')
 
 #this plots all of the startemps in a histogram
 fig, ax = plt.subplots()
