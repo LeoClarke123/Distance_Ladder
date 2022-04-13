@@ -511,6 +511,7 @@ for index, ratio in enumerate(totToLumRatios):
         del lumToTotRatios[index]
 
 print("The mean Total Cluster Mass to Luminous Cluster Mass ratio for galaxy clusters is", mean(totToLumRatios), "with standard deviation", std(totToLumRatios))
+print("The median Total Cluster Mass to Luminous Cluster Mass ratio for galaxy clusters is", median(totToLumRatios))
 
 fig, ax = plt.subplots() 
 plt.scatter(log10(clustLumMasses), log10(clustTotMasses), linewidth=0, s=3)
