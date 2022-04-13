@@ -16,16 +16,17 @@ Malkin, Z, 2019. "A NEW EQUAL-AREA ISOLATITUDINAL GRID ON A SPHERICAL SURFACE", 
 """
 
 from numpy import *
-from astropy.table import Table
 import os 
 import pandas as pd
 from statistics import *
 import matplotlib.pyplot as plt
-from matplotlib.pyplot import figure
 import matplotlib.patches as patches
 import matplotlib.colors as colours
 from sklearn.metrics import r2_score
 from scipy.optimize import curve_fit
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 def inclination_correction(major, minor, emax, method):
     '''This function increases the rotation velocity of observed stars in galaxies depending on some inferred inclination. 
@@ -451,6 +452,8 @@ ax.set_ylabel(r"Galaxy Number Density ($\times 10^{-15.55}$ pc$^{-3}$)")
 ax.ticklabel_format(axis='x', style='scientific', useMathText=True, scilimits=(0,3))
 plt.errorbar(radii, shell, yerr=distUncs, linewidth=0.5, fmt=',')
 plt.plot(x, homogeneity_func(x, coefficients[0], coefficients[1], coefficients[2]), "r--", linewidth=0.5)
+
+logging.info(f"Homogeneity function: f(r) = {coefficients[0]} * exp(-{coefficients[1]} * r) + {coefficients[2]}")
 
 fig.savefig(dir_path+'\\Distance Distribution.png', dpi=400, bbox_inches='tight', pad_inches = 0.01)
 fig.savefig(dir_path+'\\Distance Distribution.pdf', dpi=400, bbox_inches='tight', pad_inches = 0.01)
