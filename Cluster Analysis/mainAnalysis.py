@@ -398,7 +398,13 @@ plt.clf()
 
 #this plots the size of a galaxy vs its distance
 fig, ax = plt.subplots()
-plt.scatter(log10((galaxData['RadialVelocity'] - 1.643) / -0.00263), log10(((galaxData['RadialVelocity'] - 1.643) / -0.00263) * tan(galaxData['Size'])), s=0.1)
+vels = log10((galaxData['RadialVelocity'] - 1.643) / -0.00263)
+sizes = log10(((galaxData['RadialVelocity'] - 1.643) / -0.00263) * tan(galaxData['Size'] * 2 * pi / (180 * 60 * 60)))
+for index, size in enumerate(sizes):
+    if size < 0.7:
+        del sizes[index]
+        del vels[index]
+plt.scatter(vels, sizes, s=0.1)
 ax.set_ylabel("log$_{10}$ Galaxy Size (pc)")
 ax.set_xlabel("log$_{10}$ Galaxy Distance (pc)")
 #ax.set_title("Galaxy Size vs Distance")
